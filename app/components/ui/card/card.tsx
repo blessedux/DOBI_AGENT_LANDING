@@ -1,34 +1,46 @@
 import * as React from "react"
 
 interface CardProps {
-  category: string;
-  imageSrc: string;
-  title: string;
-  buttonText: string;
-  position?: { top: string; left: string }; // Allows positioning cards dynamically
+  children: React.ReactNode
+  className?: string
 }
 
-export function Card({ category, imageSrc, title, buttonText, position }: CardProps) {
+export function Card({ children, className }: CardProps) {
   return (
-    <div
-      className="bg-[#D3DAF5] p-4 rounded-xl w-64 shadow-md flex flex-col items-center text-center relative transition-all hover:scale-105"
-      style={position}
-    >
-      {/* Category Label */}
-      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-transparent px-4 py-1 text-lg font-bold text-[#4A60DD]">
-        {category}
-      </div>
-
-      {/* Card Content */}
-      <div className="bg-white rounded-lg p-6 w-full mt-4">
-        <img src={imageSrc} alt={title} className="h-20 mx-auto mb-4" />
-        <h2 className="text-[#4A60DD] font-bold text-xl">{title}</h2>
-      </div>
-
-      {/* Button */}
-      <button className="bg-[#A2A2FF] text-white font-bold py-2 px-6 rounded-full mt-4">
-        {buttonText}
-      </button>
+    <div className={`bg-[#D4DAFC] shadow-lg rounded-xl p-6 border border-[#B3BCE6] relative ${className}`}>
+      <div className="bg-white p-4 rounded-lg shadow-sm border border-[#E3E6F1]">{children}</div>
     </div>
   )
+}
+
+interface CardHeaderProps {
+  children: React.ReactNode
+}
+
+export function CardHeader({ children }: CardHeaderProps) {
+  return <div className="mb-2">{children}</div>
+}
+
+interface CardTitleProps {
+  children: React.ReactNode
+}
+
+export function CardTitle({ children }: CardTitleProps) {
+  return <h3 className="text-lg font-bold text-[#4A60DD] text-center">{children}</h3>
+}
+
+interface CardDescriptionProps {
+  children: React.ReactNode
+}
+
+export function CardDescription({ children }: CardDescriptionProps) {
+  return <p className="text-sm text-gray-600 text-center">{children}</p>
+}
+
+interface CardContentProps {
+  children: React.ReactNode
+}
+
+export function CardContent({ children }: CardContentProps) {
+  return <div className="mt-2">{children}</div>
 }
