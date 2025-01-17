@@ -1,7 +1,7 @@
 "use client"
 
 import { Line, LineChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card/card"
 import { ChartContainer, ChartTooltip } from "./ui/scroll-area"
 
 const data = [
