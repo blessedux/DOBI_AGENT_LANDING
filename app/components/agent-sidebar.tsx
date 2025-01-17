@@ -36,7 +36,7 @@ const agents = [
 
 export function AgentSidebar() {
   return (
-    <div className="w-80 border-l p-4">
+    <div className="w-80 border-l p-4 fixed right-0 top-0 h-full bg-white shadow-lg">
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-semibold">Active Agents</h2>
         <Badge variant="outline">{agents.length}</Badge>
