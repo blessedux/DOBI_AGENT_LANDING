@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Navbar from "./components/ui/Navbar";
 import DobiChart from "./components/DobiChart";
 import { AgentSidebar } from "./components/agent-sidebar";
+import LogsViewer from "./components/ui/LogsViewer"; // Import new component
 
 export default function Home() {
   const [selectedWorkflow, setSelectedWorkflow] = useState("architecture");
@@ -18,6 +19,7 @@ export default function Home() {
         <AgentSidebar />
         <DobiChart selectedWorkflow={selectedWorkflow} />
       </main>
+      <LogsViewer />
     </div>
   );
 }
