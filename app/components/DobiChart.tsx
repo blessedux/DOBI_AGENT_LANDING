@@ -1,65 +1,102 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card/card"
-import { Connection } from "./ui/connection"
+import React, { useCallback } from "react";
+import { ReactFlow, Background, Controls, useEdgesState, useNodesState, addEdge, Handle, Position } from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
 
-const cardSpacingX = 400 // Horizontal spacing
-const cardSpacingY = 250 // Vertical spacing
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 
-const cardsData = [
-  { id: 1, title: "EV-Charger", description: "RWA Asset", x: 100, y: 50 },
-  { id: 2, title: "DBS Accountability System", description: "Audit Logs", x: 100 + cardSpacingX, y: 50 },
-  { id: 3, title: "ZKP", description: "Zero Knowledge Proofs", x: 100, y: 50 + cardSpacingY },
-  { id: 4, title: "DOBO-CORE", description: "Fuzzy AI Agent", x: 100 + cardSpacingX, y: 50 + cardSpacingY },
-  { id: 5, title: "Smart Contract", description: "Dobprotocol Pool", x: 100, y: 50 + cardSpacingY * 2 },
-  { id: 6, title: "Token Holders", description: "Distribution", x: 100 + cardSpacingX, y: 50 + cardSpacingY * 2 },
-]
+// Define Spacing for Layout
+const cardSpacingX = 350;
+const cardSpacingY = 200;
 
-const connections = [
-  { from: 1, to: 2, label: "Rwa Reports", number: "02" }, // EV-Charger → DBS
-  { from: 3, to: 4, label: "Deposit of Funds", number: "04" }, // ZKP → DOBO-CORE
-  { from: 5, to: 6, label: "Distribution", number: "06" }, // Smart Contract → Token Holders
-]
+// Define Workflows with Six Interconnected Cards
+const workflows = {
+  architecture: {
+    name: "Architecture",
+    nodes: [
+      { id: "1", position: { x: 100, y: 50 }, type: "customNode", data: { label: "EV-Charger", description: "Transaction Received" } },
+      { id: "2", position: { x: 100 + cardSpacingX, y: 50 }, type: "customNode", data: { label: "DBS Accountability", description: "Logs financial & energy data" } },
+      { id: "3", position: { x: 100, y: 50 + cardSpacingY }, type: "customNode", data: { label: "Convert to DOB", description: "Fiat converted into DOB tokens" } },
+      { id: "4", position: { x: 100 + cardSpacingX, y: 50 + cardSpacingY }, type: "customNode", data: { label: "DOBI-CORE AI", description: "Allocates profits & costs" } },
+      { id: "5", position: { x: 100, y: 50 + cardSpacingY * 2 }, type: "customNode", data: { label: "ZKP Secure Deposit", description: "Ensures tamper-proof fund transfers" } },
+      { id: "6", position: { x: 100 + cardSpacingX, y: 50 + cardSpacingY * 2 }, type: "customNode", data: { label: "Profit Pool", description: "Stores & manages investor funds" } },
+    ],
+    edges: [
+      { id: "e1-2", source: "1", target: "2", animated: true },
+      { id: "e2-3", source: "2", target: "3", animated: true },
+      { id: "e3-4", source: "3", target: "4", animated: true },
+      { id: "e4-5", source: "4", target: "5", animated: true },
+      { id: "e5-6", source: "5", target: "6", animated: true },
+    ],
+  },
+  devices: {
+    name: "Devices",
+    nodes: [
+      { id: "1", position: { x: 100, y: 50 }, type: "customNode", data: { label: "Continuous Monitoring", description: "Real-time charger tracking" } },
+      { id: "2", position: { x: 100 + cardSpacingX, y: 50 }, type: "customNode", data: { label: "Detect Maintenance Needs", description: "AI predicts failures" } },
+      { id: "3", position: { x: 100, y: 50 + cardSpacingY }, type: "customNode", data: { label: "Manage Warranty", description: "Automates defect claims" } },
+      { id: "4", position: { x: 100 + cardSpacingX, y: 50 + cardSpacingY }, type: "customNode", data: { label: "Predictive Analytics", description: "Optimizes energy efficiency" } },
+      { id: "5", position: { x: 100, y: 50 + cardSpacingY * 2 }, type: "customNode", data: { label: "Social Media Reports", description: "Updates on maintenance" } },
+      { id: "6", position: { x: 100 + cardSpacingX, y: 50 + cardSpacingY * 2 }, type: "customNode", data: { label: "Alert System", description: "Sends automated alerts" } },
+    ],
+    edges: [
+      { id: "e1-2", source: "1", target: "2", animated: true },
+      { id: "e2-3", source: "2", target: "3", animated: true },
+      { id: "e3-4", source: "3", target: "4", animated: true },
+      { id: "e4-5", source: "4", target: "5", animated: true },
+      { id: "e5-6", source: "5", target: "6", animated: true },
+    ],
+  },
+  details: {
+    name: "Details",
+    nodes: [
+      { id: "1", position: { x: 100, y: 50 }, type: "customNode", data: { label: "EV Charger Details", description: "Model, location, status" } },
+      { id: "2", position: { x: 100 + cardSpacingX, y: 50 }, type: "customNode", data: { label: "Owner Information", description: "Ehive SPA, investors" } },
+      { id: "3", position: { x: 100, y: 50 + cardSpacingY }, type: "customNode", data: { label: "Transaction History", description: "Energy sessions, payments" } },
+      { id: "4", position: { x: 100 + cardSpacingX, y: 50 + cardSpacingY }, type: "customNode", data: { label: "Maintenance Logs", description: "Service records" } },
+      { id: "5", position: { x: 100, y: 50 + cardSpacingY * 2 }, type: "customNode", data: { label: "Charger Status", description: "Active / Maintenance" } },
+      { id: "6", position: { x: 100 + cardSpacingX, y: 50 + cardSpacingY * 2 }, type: "customNode", data: { label: "Usage Reports", description: "Energy & revenue" } },
+    ],
+    edges: [
+      { id: "e1-2", source: "1", target: "2", animated: true },
+      { id: "e2-3", source: "2", target: "3", animated: true },
+      { id: "e3-4", source: "3", target: "4", animated: true },
+      { id: "e4-5", source: "4", target: "5", animated: true },
+      { id: "e5-6", source: "5", target: "6", animated: true },
+    ],
+  },
+};
 
-export default function DobiChart() {
+// Custom Node Component
+const CustomNode = ({ data }) => (
+  <div className="relative">
+    <Handle type="target" position={Position.Left} className="w-3 h-3 bg-blue-500 rounded-full" />
+    <Card className="w-[220px] h-[180px] flex flex-col justify-center items-center shadow-lg border border-gray-300 bg-white">
+      <CardHeader>
+        <CardTitle className="text-center text-lg">{data.label}</CardTitle>
+        <CardDescription className="text-center">{data.description}</CardDescription>
+      </CardHeader>
+      <CardContent />
+    </Card>
+    <Handle type="source" position={Position.Right} className="w-3 h-3 bg-blue-500 rounded-full" />
+  </div>
+);
+
+export default function DobiChart({ selectedWorkflow = "architecture" }) {
+  const workflowData = workflows[selectedWorkflow] || workflows["architecture"];
+
+  const [nodes, setNodes, onNodesChange] = useNodesState(workflowData.nodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(workflowData.edges);
+
+  const onConnect = useCallback((params) => setEdges((eds) => addEdge({ ...params, animated: true }, eds)), []);
+
   return (
-    <div className="relative w-full h-screen flex items-center justify-center">
-      {/* Render Animated Connections */}
-      {connections.map((conn, index) => {
-        const fromCard = cardsData.find((p) => p.id === conn.from)
-        const toCard = cardsData.find((p) => p.id === conn.to)
-
-        return fromCard && toCard ? (
-          <Connection
-            key={index}
-            from={{ x: fromCard.x + 220, y: fromCard.y + 80 }} 
-            to={{ x: toCard.x - 10, y: toCard.y + 80 }}
-            label={conn.label}
-            number={conn.number}
-          />
-        ) : null
-      })}
-
-      {/* Render All Cards WITHOUT Graphs */}
-      {cardsData.map((card, index) => (
-        <div key={card.id} style={{ position: "absolute", top: card.y, left: card.x }}>
-          {/* Number Bubble */}
-          <div className="absolute -left-12 top-1/2 -translate-y-1/2 w-10 h-10 bg-[#A2A2FF] text-white text-sm font-bold flex items-center justify-center rounded-full shadow-lg">
-            {`0${index + 1}`}
-          </div>
-
-          {/* Card Component (NO GRAPHS) */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{card.title}</CardTitle>
-              <CardDescription>{card.description}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-center text-gray-500">Data not available</p>
-            </CardContent>
-          </Card>
-        </div>
-      ))}
+    <div className="relative w-full h-screen overflow-hidden touch-none">
+      <ReactFlow nodes={nodes} edges={edges} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onConnect={onConnect} fitView nodeTypes={{ customNode: CustomNode }}>
+        <Background />
+        <Controls />
+      </ReactFlow>
     </div>
-  )
+  );
 }
