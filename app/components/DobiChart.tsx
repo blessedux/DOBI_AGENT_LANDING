@@ -26,7 +26,7 @@ const CustomStraightEdge = ({ id, sourceX, sourceY, targetX, targetY, style }) =
             fontWeight: "bold",
           }}
         >
-          {id}
+          
         </div>
       </EdgeLabelRenderer>
     </>
@@ -56,14 +56,14 @@ const nodes = [
 
 // Define Edges with Left & Right Handles Only
 const edges = [
-  // 🔵 Horizontal Edges (Keep these unchanged)
-  { id: "e1-2", source: "1", target: "2", type: "straight", animated: true, sourceHandle: "right", targetHandle: "left", style: { stroke: "#2D4EC8", strokeWidth: 3 } },
-  { id: "e3-4", source: "3", target: "4", type: "straight", animated: true, sourceHandle: "right", targetHandle: "left", style: { stroke: "#2D4EC8", strokeWidth: 3 } },
-  { id: "e5-6", source: "5", target: "6", type: "straight", animated: true, sourceHandle: "right", targetHandle: "left", style: { stroke: "#2D4EC8", strokeWidth: 3 } },
+  // 🔵 Previously forced straight lines → Now dynamic connections
+  { id: "e1-2", source: "1", target: "2", type: "smoothstep", animated: true, sourceHandle: "right", targetHandle: "left", style: { stroke: "#2D4EC8", strokeWidth: 3 } },
+  { id: "e3-4", source: "3", target: "4", type: "smoothstep", animated: true, sourceHandle: "right", targetHandle: "left", style: { stroke: "#2D4EC8", strokeWidth: 3 } },
+  { id: "e5-6", source: "5", target: "6", type: "smoothstep", animated: true, sourceHandle: "right", targetHandle: "left", style: { stroke: "#2D4EC8", strokeWidth: 3 } },
 
-  // 🔵 L-Shaped Arrows (FIXED)  
-  { id: "e2-3", source: "2", target: "3", type: "step", animated: true, sourceHandle: "right", targetHandle: "right", style: { stroke: "#2D4EC8", strokeWidth: 3, borderRadius: 10 } },  // ✅ Right → Right  
-  { id: "e4-5", source: "4", target: "5", type: "step", animated: true, sourceHandle: "left", targetHandle: "left", style: { stroke: "#2D4EC8", strokeWidth: 3, borderRadius: 10 } },  // ✅ Left → Left  
+  // 🔵 Keep L-Shaped Arrows as `step`
+  { id: "e2-3", source: "2", target: "3", type: "step", animated: true, sourceHandle: "right", targetHandle: "right", style: { stroke: "#2D4EC8", strokeWidth: 3, borderRadius: 10 } },
+  { id: "e4-5", source: "4", target: "5", type: "step", animated: true, sourceHandle: "left", targetHandle: "left", style: { stroke: "#2D4EC8", strokeWidth: 3, borderRadius: 10 } },
 ];
 
 // Define Custom Node Component with Left & Right Handles Only
