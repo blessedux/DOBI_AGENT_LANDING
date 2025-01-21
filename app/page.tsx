@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Navbar from "./components/ui/Navbar";
 import DobiChart from "./components/DobiChart";
-import { AgentSidebar } from "./components/agent-sidebar";
+import AgentSidebar  from "./components/AgentSidebar";
 import LogsViewer from "./components/ui/LogsViewer"; // Import new component
 
 export default function Home() {
