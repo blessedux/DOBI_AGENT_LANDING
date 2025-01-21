@@ -1,0 +1,130 @@
+{
+  "chargers": [
+    {
+      "id_charger": "CHG-001",
+      "name": "Fast Charger A1",
+      "model": "ABB Fast",
+      "image": "data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAABJ4AAAUQCAYAAAAF3pr2AAAAyHpUWHRSYXcgcHJvZmlsZSB0eXBlIGV4aWYAAHjabVDbDcMwCPz3",
+      "location": {
+        "latitude": -33.4489,
+        "longitude": -70.6693,
+        "address": "Santiago, Chile"
+      },
+      "company_owner": "Ehive SPA",
+      "creation_date": "2023-12-01",
+      "status": "active",
+      "transactions": 1200,
+      "cost_generated": 5000.75,
+      "income_generated": 15000.50,
+      "balance_total": 10000.25
+    },
+    {
+      "id_charger": "CHG-002",
+      "name": "Eco Charger B3",
+      "model": "ABB Slow",
+      "image": "data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAABJ4AAAUQCAYAAAAF3pr2AAAAyHpUWHRSYXcgcHJvZmlsZSB0eXBlIGV4aWYAAHjabVDbDcMwCPz3",
+      "location": {
+        "latitude": -33.4567,
+        "longitude": -70.6723,
+        "address": "Providencia, Chile"
+      },
+      "company_owner": "Ehive SPA",
+      "creation_date": "2024-01-15",
+      "status": "maintenance",
+      "transactions": 450,
+      "cost_generated": 2000.00,
+      "income_generated": 6500.00,
+      "balance_total": 4500.00
+    },
+    {
+      "id_charger": "CHG-003",
+      "name": "Urban Charger C1",
+      "model": "ABB Slow",
+      "image": "data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAABJ4AAAUQCAYAAAAF3pr2AAAAyHpUWHRSYXcgcHJvZmlsZSB0eXBlIGV4aWYAAHjabVDbDcMwCPz3",
+      "location": {
+        "latitude": -33.4450,
+        "longitude": -70.6601,
+        "address": "Las Condes, Chile"
+      },
+      "company_owner": "Ehive SPA",
+      "creation_date": "2024-02-01",
+      "status": "active",
+      "transactions": 320,
+      "cost_generated": 1500.00,
+      "income_generated": 4500.00,
+      "balance_total": 3000.00
+    },
+    {
+      "id_charger": "CHG-004",
+      "name": "Eco Charger B4",
+      "model": "ABB Fast",
+      "image": "data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAABJ4AAAUQCAYAAAAF3pr2AAAAyHpUWHRSYXcgcHJvZmlsZSB0eXBlIGV4aWYAAHjabVDbDcMwCPz3",
+      "location": {
+        "latitude": -33.4472,
+        "longitude": -70.6765,
+        "address": "Ñuñoa, Chile"
+      },
+      "company_owner": "Ehive SPA",
+      "creation_date": "2024-03-10",
+      "status": "active",
+      "transactions": 700,
+      "cost_generated": 3000.00,
+      "income_generated": 10000.00,
+      "balance_total": 7000.00
+    },
+    {
+      "id_charger": "CHG-005",
+      "name": "Highway Charger D1",
+      "model": "ABB Fast",
+      "image": "data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAABJ4AAAUQCAYAAAAF3pr2AAAAyHpUWHRSYXcgcHJvZmlsZSB0eXBlIGV4aWYAAHjabVDbDcMwCPz3",
+      "location": {
+        "latitude": -33.4432,
+        "longitude": -70.6612,
+        "address": "Vitacura, Chile"
+      },
+      "company_owner": "Ehive SPA",
+      "creation_date": "2024-04-05",
+      "status": "active",
+      "transactions": 950,
+      "cost_generated": 4000.00,
+      "income_generated": 14000.00,
+      "balance_total": 10000.00
+    },
+    {
+      "id_charger": "CHG-006",
+      "name": "Green Charger G1",
+      "model": "ABB Slow",
+      "image": "data:image/png;base64, UklGRjKKAQBXRUJQVlA4IAKuAACQZASdASoABAAEPjEYiEQiJ6SSKMh4AwSztyhD22b0WPF0lk3uZ8wG87nyN848pulTaoZ+75iV",
+      "location": {
+        "latitude": 37.7749,
+        "longitude": -122.4194,
+        "address": "San Francisco, CA, USA"
+      },
+      "company_owner": "GreenTech SPA",
+      "creation_date": "2024-05-10",
+      "status": "maintenance",
+      "transactions": 600,
+      "cost_generated": 2500.00,
+      "income_generated": 8500.00,
+      "balance_total": 6000.00
+    },
+    {
+      "id_charger": "CHG-007",
+      "name": "Green Charger G2",
+      "model": "ABB Fast",
+      "image": "data:image/png;base64, UklGRjKKAQBXRUJQVlA4IAKuAACQZASdASoABAAEPjEYiEQiJ6SSKMh4AwSztyhD22b0WPF0lk3uZ8wG87nyN848pulTaoZ+75iV",
+      "location": {
+        "latitude": 37.7740,
+        "longitude": -122.4190,
+        "address": "Oakland, CA, USA"
+      },
+      "company_owner": "GreenTech SPA",
+      "creation_date": "2024-06-20",
+      "status": "active",
+      "transactions": 800,
+      "cost_generated": 3000.00,
+      "income_generated": 12000.00,
+      "balance_total": 9000.00
+    }
+  ]
+}
