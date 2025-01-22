@@ -122,7 +122,7 @@ export default function AgentSidebar({ setSelectedDevice, selectedDevice }) {
             onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
             className="p-2 rounded-md hover:bg-gray-200 transition-all"
           >
-            {isSidebarOpen ? <ChevronLeft size={24} /> : <ChevronRight size={24} />}
+            {isSidebarOpen ? <ChevronRight size={24} /> : <ChevronLeft size={24} />}
           </button>
 
           {/* Sidebar Title (hide if collapsed) */}

@@ -42,7 +42,8 @@ export default function Navbar({ activeTab, setActiveTab }) {
             rel="noopener noreferrer" className="hover:text-blue-600 transition-all text-lg">
             Whitepaper
           </Link>
-          <Link href="/app" className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-all text-lg">
+          <Link href="https://home.dobprotocol.com/home" target="_blank" 
+            rel="noopener noreferrer" className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-all text-lg">
             App
           </Link>
         </div>

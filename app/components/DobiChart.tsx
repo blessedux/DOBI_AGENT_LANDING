@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { ReactFlow, Background, Controls, useEdgesState, useNodesState, addEdge, Handle, Position } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { StraightEdge, StepEdge, SmoothStepEdge } from "@xyflow/react";
 import BubbleMap from "./BubbleMap";
+import { useTransition, animated } from "@react-spring/web";
 
 const edgeTypes = {
   straight: StraightEdge,
@@ -12,7 +13,7 @@ const edgeTypes = {
   smoothstep: SmoothStepEdge,
 };
 
-const nodes = [
+const initialNodes = [
   { id: "1", position: { x: 100, y: 50 }, type: "customNode", data: { headerLabel: "RWA", label: "EV-Charger", description: "Transaction Received", number: 1 } },
   { id: "2", position: { x: 600, y: 50 }, type: "customNode", data: { headerLabel: "DBS", label: "DBS Accountability", description: "Logs financial & energy data", number: 2 } },
   { id: "3", position: { x: 600, y: 400 }, type: "customNode", data: { headerLabel: "AI Core", label: "DOBI-CORE AI", description: "Allocates profits & costs", number: 3 } },
@@ -21,7 +22,7 @@ const nodes = [
   { id: "6", position: { x: 600, y: 800 }, type: "customNode", data: { headerLabel: "Tokenomics", label: "Token Distribution", description: "Profit distribution to token holders", number: 6 } },
 ];
 
-const edges = [
+const initialEdges = [
   { id: "e1-2", source: "1", target: "2", type: "smoothstep", animated: true, sourceHandle: "right", targetHandle: "left", style: { stroke: "#2D4EC8", strokeWidth: 3 } },
   { id: "e3-4", source: "3", target: "4", type: "smoothstep", animated: true, sourceHandle: "right", targetHandle: "left", style: { stroke: "#2D4EC8", strokeWidth: 3 } },
   { id: "e5-6", source: "5", target: "6", type: "smoothstep", animated: true, sourceHandle: "right", targetHandle: "left", style: { stroke: "#2D4EC8", strokeWidth: 3 } },
@@ -44,9 +45,6 @@ const CustomNode = ({ data }) => {
         <div className="w-[260px] h-[200px] bg-white flex flex-col justify-between items-center shadow-md rounded-lg p-4 z-20">
           {data.image && <img src={data.image} alt={data.label} className="w-16 h-16 object-contain" />}
           <div className="text-[#2D4EC8] font-bold text-md text-center">{data.label}</div>
-          {data.number <= 3 && (
-            <div className="absolute bottom-2 bg-[#B5C8F9] text-[#2D4EC8] font-bold px-4 py-1 text-sm rounded-full">TEE</div>
-          )}
         </div>
       </div>
     </div>
@@ -55,42 +53,51 @@ const CustomNode = ({ data }) => {
 
 // ✅ Main DobiChart component - NOW Controlled by Navbar
 export default function DobiChart({ activeTab }) {
-  const [nodesState, setNodes, onNodesChange] = useNodesState(nodes);
-  const [edgesState, setEdges, onEdgesChange] = useEdgesState(edges ?? []);
-
+  const [nodesState, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [edgesState, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const onConnect = useCallback((params) => setEdges((eds) => addEdge({ ...params, animated: true }, eds)), []);
+
+  // Implement the transition effect
+  const transitions = useTransition(activeTab, {
+    from: { opacity: 0, filter: "blur(10px)", transform: "scale(0.95)" },
+    enter: { opacity: 1, filter: "blur(0px)", transform: "scale(1)" },
+    leave: { opacity: 0, filter: "blur(10px)", transform: "scale(1.05)" },
+    config: { tension: 200, friction: 20 },
+  });
 
   return (
     <div className="relative w-full h-screen overflow-hidden touch-none">
-      {/* ✅ Render ReactFlow Chart OR BubbleMap based on activeTab from Navbar */}
-      {activeTab === "architecture" ? (
-        <ReactFlow
-          nodes={nodesState}
-          edges={edgesState}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          fitView
-          nodeTypes={{ customNode: CustomNode }}
-          edgeTypes={edgeTypes}
+      {/* Keep both components in DOM but hide inactive one */}
+      {transitions((styles, tab) => (
+        <animated.div
+          style={{
+            ...styles,
+            position: "absolute",
+            width: "100%",
+            height: "100%",
+            visibility: tab === activeTab ? "visible" : "hidden",
+          }}
         >
-          <Background />
-          <Controls />
-        </ReactFlow>
-      ) : (
-        <BubbleMap />
-      )}
-    </div>
-  );
-}
-
-// ✅ BubbleMap Component
-function BubbleMap() {
-  return (
-    <div className="flex justify-center items-center w-full h-full">
-      <div className="w-32 h-32 bg-blue-500 rounded-full flex items-center justify-center shadow-lg">
-        <img src="/DOBI_icon.png" alt="DOBI Icon" className="w-20 h-20 object-contain" />
-      </div>
+          {tab === "architecture" ? (
+            <ReactFlow
+              nodes={nodesState}
+              edges={edgesState}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              onConnect={onConnect}
+              fitView
+              nodeTypes={{ customNode: CustomNode }}
+              edgeTypes={edgeTypes}
+              className="w-full h-full min-h-[500px]"
+            >
+              <Background />
+              <Controls />
+            </ReactFlow>
+          ) : (
+            <BubbleMap />
+          )}
+        </animated.div>
+      ))}
     </div>
   );
 }
