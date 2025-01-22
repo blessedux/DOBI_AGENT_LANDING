@@ -1,31 +1,43 @@
-"use client";
+import { useSpring, animated } from "@react-spring/web";
 
-import { motion, AnimatePresence } from "framer-motion";
+// Bubble data structure
+const bubbles = [
+  { id: 1, label: "Electricity Payment Pool" },
+  { id: 2, label: "Validator Amount" },
+  { id: 3, label: "Payment Pool" },
+  { id: 4, label: "Agent Validator Oracle (IoT)" },
+  { id: 5, label: "Stream Income" },
+];
 
-export default function BubbleMap({ isVisible, onClose }) {
+export default function BubbleMap({ isVisible }) {
+  if (!isVisible) return null; // Hide when not active
+
   return (
-    <AnimatePresence>
-      {isVisible && (
-        <motion.div
-          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-md z-50"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose} // Click outside to close
-        >
-          {/* BubbleMap Window */}
-          <motion.div
-            className="relative bg-white w-[500px] h-[500px] rounded-lg shadow-lg p-5 flex flex-col items-center justify-center"
-            initial={{ scale: 0.8, opacity: 0, y: -50 }}
-            animate={{ scale: 1, opacity: 1, y: 0, transition: { type: "spring", stiffness: 200, damping: 20 } }}
-            exit={{ scale: 0.8, opacity: 0, y: -50 }}
-            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
+    <div className="relative w-full h-full flex items-center justify-center">
+      {/* Center Bubble - Device */}
+      <div className="absolute w-24 h-24 bg-blue-500 text-white flex items-center justify-center rounded-full shadow-md">
+        Device
+      </div>
+
+      {/* Outer Bubbles */}
+      {bubbles.map((bubble, index) => {
+        // Spring-based smooth animation
+        const bubbleSpring = useSpring({
+          x: Math.cos((index / bubbles.length) * Math.PI * 2) * 150,
+          y: Math.sin((index / bubbles.length) * Math.PI * 2) * 150,
+          config: { tension: 100, friction: 20 },
+        });
+
+        return (
+          <animated.div
+            key={bubble.id}
+            style={bubbleSpring}
+            className="absolute w-20 h-20 bg-green-500 text-white flex items-center justify-center rounded-full shadow-md cursor-pointer"
           >
-            <h2 className="text-2xl font-bold text-[#2D4EC8]">Bubble Map</h2>
-            <p className="text-gray-600">Device relationships will go here.</p>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+            {bubble.label}
+          </animated.div>
+        );
+      })}
+    </div>
   );
 }

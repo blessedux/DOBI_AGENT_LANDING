@@ -1,11 +1,23 @@
-import * as React from "react"
-import { cn } from "@/lib/utils"
+import React from "react";
 
-const Badge = React.forwardRef<HTMLSpanElement, React.HTMLAttributes<HTMLSpanElement>>(
-  ({ className, ...props }, ref) => (
-    <span ref={ref} className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-blue-500 text-white", className)} {...props} />
-  )
-)
-Badge.displayName = "Badge"
+interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
+  variant?: "default" | "outline" | "destructive" | "secondary";
+}
 
-export { Badge }
+export const Badge: React.FC<BadgeProps> = ({ variant = "default", children, ...props }) => {
+  const variantClasses = {
+    default: "bg-blue-500 text-white",
+    outline: "border border-blue-500 text-blue-500",
+    destructive: "bg-red-500 text-white",
+    secondary: "bg-gray-500 text-white",
+  };
+
+  return (
+    <span
+      className={`inline-block px-2 py-1 text-xs font-medium rounded ${variantClasses[variant]}`}
+      {...props}
+    >
+      {children}
+    </span>
+  );
+};
