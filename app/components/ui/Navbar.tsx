@@ -35,8 +35,8 @@ export default function Navbar({ activeTab, setActiveTab }) {
 
         {/* Right-Side Navigation Links */}
         <div className="flex space-x-6 items-center">
-          <Link href="/what-is-dobi" className="hover:text-blue-600 transition-all text-lg">
-            What is Dobi?
+          <Link href="https://app.virtuals.io/virtuals/13315" className="hover:text-blue-600 transition-all text-lg">
+            What is $Dobi?
           </Link>
           <Link href="https://dobprotocol.notion.site/wiki1?v=17beffc346f1816da29e000ccdf6d89f" target="_blank" 
             rel="noopener noreferrer" className="hover:text-blue-600 transition-all text-lg">

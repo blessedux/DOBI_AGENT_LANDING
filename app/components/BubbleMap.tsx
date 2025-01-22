@@ -64,9 +64,9 @@ export default function BubbleMap() {
     const centralNode: Node = {
       id: "central",
       type: "centralNode",
-      data: { label: "DOBI" },
+      data: { label: "DOBI Agent" },
       position: { x: 0, y: 0 },
-      // Remove the style object since it's now handled in the CentralNode component
+      
     };
 
     // Adjust charger positions relative to center
