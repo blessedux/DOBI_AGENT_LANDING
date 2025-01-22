@@ -17,6 +17,7 @@ import "reactflow/dist/style.css";
 import { useSpring, animated } from "@react-spring/web";
 import CentralNode from "./ui/CentralNode";
 import Image from "next/image";
+import GlassmorphismWindow from "./ui/GlassmorphismWindow";
 
 // Charger data grouped by company
 const chargerGroups = {
@@ -33,40 +34,15 @@ const chargerGroups = {
   ],
 };
 
-// Custom central node component
-const CustomCentralNode = () => (
-  <div className="flex flex-col items-center justify-center w-full h-full">
-    <div className="text-2xl font-bold mb-2">DOBI</div>
-    <div className="relative w-16 h-16">
-      <Image
-        src="/icons/dobi-icon.png"
-        alt="DOBI Icon"
-        fill
-        className="object-contain"
-        style={{ borderRadius: "50%" }}
-      />
-    </div>
-  </div>
-);
-
 const nodeTypes = {
-  centralNode: CustomCentralNode,
-};
-
-// Add this edge type configuration at the top level
-const edgeTypes = {
-  custom: {
-    style: {
-      stroke: '#FFFFFF',
-      strokeWidth: 3,
-    },
-  },
+  centralNode: CentralNode,
 };
 
 export default function BubbleMap() {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [loading, setLoading] = React.useState(true);
+  const [reactFlowInstance, setReactFlowInstance] = React.useState(null);
 
   const styles = useSpring({
     opacity: 1,
@@ -78,35 +54,28 @@ export default function BubbleMap() {
   useEffect(() => {
     console.log("✅ BubbleMap.tsx is rendering!");
 
-    const centerX = window.innerWidth / 2;
-    const centerY = window.innerHeight / 2;
+    // Calculate viewport center
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const centerX = 0; // This will be adjusted by the viewport positioning
+    const centerY = 0; // This will be adjusted by the viewport positioning
 
-    // Central DOBI Node
+    // Central DOBI Node - Remove style overrides that might conflict
     const centralNode: Node = {
       id: "central",
       type: "centralNode",
       data: { label: "DOBI" },
-      position: { x: centerX, y: centerY },
-      style: {
-        width: 150,
-        height: 150,
-        borderRadius: "50%",
-        backgroundColor: "#2D4EC8",
-        color: "white",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        border: "4px solid #B5C8F9",
-      },
+      position: { x: 0, y: 0 },
+      // Remove the style object since it's now handled in the CentralNode component
     };
 
+    // Adjust charger positions relative to center
     let allNodes: Node[] = [centralNode];
     let allEdges: Edge[] = [];
 
-    // Create nodes and edges for each company group
     Object.entries(chargerGroups).forEach(([company, chargers], groupIndex) => {
       const isLeftGroup = groupIndex === 0;
-      const baseX = isLeftGroup ? centerX - 400 : centerX + 400;
+      const baseX = isLeftGroup ? -500 : 500; // Positions relative to center
       
       chargers.forEach((charger, index) => {
         const chargerNode: Node = {
@@ -119,7 +88,7 @@ export default function BubbleMap() {
           },
           position: {
             x: baseX + (isLeftGroup ? -100 : 100),
-            y: centerY + (index * 120) - (chargers.length * 60) + 100,
+            y: (index * 120) - (chargers.length * 60),
           },
           style: {
             width: 180,
@@ -133,7 +102,6 @@ export default function BubbleMap() {
         };
         allNodes.push(chargerNode);
 
-        // Simplified edge configuration
         allEdges.push({
           id: `edge-${charger.id}`,
           source: "central",
@@ -150,8 +118,18 @@ export default function BubbleMap() {
 
     setNodes(allNodes);
     setEdges(allEdges);
+
+    // Center the viewport on the central node
+    if (reactFlowInstance) {
+      reactFlowInstance.setViewport({
+        x: viewportWidth / 2,
+        y: viewportHeight / 2,
+        zoom: 0.75
+      });
+    }
+
     setLoading(false);
-  }, [setNodes, setEdges]);
+  }, [setNodes, setEdges, reactFlowInstance]);
 
   const handleNodesChange = useCallback(
     (changes: any) => {
@@ -164,39 +142,22 @@ export default function BubbleMap() {
 
   return (
     <div className="relative w-full h-full">
+      <GlassmorphismWindow />
       <animated.div style={styles} className="w-full h-full relative">
         <ReactFlow
           nodes={nodes}
           edges={edges}
           onNodesChange={handleNodesChange}
           onEdgesChange={onEdgesChange}
-          fitView
-          fitViewOptions={{ padding: 0.2 }}
-          panOnScroll
-          zoomOnScroll
-          zoomOnPinch
-          zoomOnDoubleClick
-          minZoom={0.5}
-          maxZoom={2}
-          nodeTypes={nodeTypes}
+          fitView={false}
           className="bg-transparent"
-          defaultEdgeOptions={{
-            type: "default",
-            animated: true,
-            style: {
-              stroke: "#FFFFFF",
-              strokeWidth: 3,
-            },
-          }}
+          defaultZoom={0.75}
+          minZoom={0.5}
+          maxZoom={1.5}
+          onInit={setReactFlowInstance}
         >
-          <Background 
-            color="#2D4EC8" 
-            gap={20} 
-            size={1}
-            style={{ opacity: 0.2 }}
-          />
-          <Controls />
-          <MiniMap />
+          <Background color="#2D4EC8" gap={20} size={1} style={{ opacity: 0.1 }} />
+          <Controls className="text-white" />
         </ReactFlow>
       </animated.div>
     </div>

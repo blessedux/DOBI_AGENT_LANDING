@@ -13,7 +13,7 @@ export default function Navbar({ activeTab, setActiveTab }) {
           rel="noopener noreferrer" className="cursor-pointer">
           <Image src="/icons/dobprotocol-logo.svg" alt="DOB Protocol" width={40} height={40} />
         </Link>
-        <span className="text-lg font-semibold">Dobi Agent</span>
+        <span className="text-lg font-semibold">Dob Protocol</span>
       </div>
 
       {/* Centered Section - Tabs & Navigation Links */}
