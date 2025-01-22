@@ -5,6 +5,7 @@ import { Badge } from "./ui/Badge";
 import { ScrollArea } from "./ui/ScrollArea";
 import BubbleMap from "./BubbleMap";
 import { ChevronRight, ChevronLeft } from "lucide-react"; 
+import DeviceWorkflow from "./DeviceWorkflow";
 
 const chargers = [
   {
@@ -107,8 +108,19 @@ const chargers = [
   },
 ];
 
-export default function AgentSidebar({ setSelectedDevice, selectedDevice }) {
+interface AgentSidebarProps {
+  setSelectedDevice: (device: string) => void;
+  selectedDevice: string | null;
+}
+
+export default function AgentSidebar({ setSelectedDevice, selectedDevice }: AgentSidebarProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true); 
+  const [isWorkflowOpen, setIsWorkflowOpen] = useState(false);
+
+  const handleDeviceClick = (deviceId: string) => {
+    setSelectedDevice(deviceId);
+    setIsWorkflowOpen(true);
+  };
 
   return (
     <>
@@ -146,7 +158,7 @@ export default function AgentSidebar({ setSelectedDevice, selectedDevice }) {
                       ? "bg-[#B5C8F9]"
                       : "bg-card hover:bg-gray-100"
                   }`}
-                  onClick={() => setSelectedDevice(charger)}
+                  onClick={() => handleDeviceClick(charger.id_charger)}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="font-medium text-[#2D4EC8]">{charger.name}</h3>
@@ -164,6 +176,13 @@ export default function AgentSidebar({ setSelectedDevice, selectedDevice }) {
           </ScrollArea>
         )}
       </div>
+
+      {/* Workflow Modal */}
+      <DeviceWorkflow
+        isOpen={isWorkflowOpen}
+        onClose={() => setIsWorkflowOpen(false)}
+        selectedDevice={selectedDevice}
+      />
     </>
   );
 }

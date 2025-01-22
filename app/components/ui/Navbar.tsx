@@ -11,7 +11,7 @@ export default function Navbar({ activeTab, setActiveTab }) {
       <div className="flex items-center space-x-3 flex-shrink-0">
         <Link href="https://www.dobprotocol.com/en/" target="_blank" 
           rel="noopener noreferrer" className="cursor-pointer">
-          <Image src="/dobprotocol-logo.svg" alt="DOB Protocol" width={40} height={40} />
+          <Image src="/icons/dobprotocol-logo.svg" alt="DOB Protocol" width={40} height={40} />
         </Link>
         <span className="text-lg font-semibold">Dobi Agent</span>
       </div>

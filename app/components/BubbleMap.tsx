@@ -8,26 +8,59 @@ import {
   MiniMap,
   useNodesState,
   useEdgesState,
-  MarkerType,
   Node,
   Edge,
+  EdgeTypes,
+  MarkerType,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import { useSpring, animated } from "@react-spring/web";
 import CentralNode from "./ui/CentralNode";
+import Image from "next/image";
 
-// Charger devices
-const chargers = [
-  { id: "CHG-001", name: "Fast Charger A1" },
-  { id: "CHG-002", name: "Eco Charger B3" },
-  { id: "CHG-003", name: "Urban Charger C1" },
-  { id: "CHG-004", name: "Eco Charger B4" },
-  { id: "CHG-005", name: "Highway Charger D1" },
-];
+// Charger data grouped by company
+const chargerGroups = {
+  "Ehive SPA": [
+    { id: "CHG-001", name: "Fast Charger A1", transactions: 1200, balance: 10000.25 },
+    { id: "CHG-002", name: "Eco Charger B3", transactions: 450, balance: 4500.00 },
+    { id: "CHG-003", name: "Urban Charger C1", transactions: 320, balance: 3000.00 },
+    { id: "CHG-004", name: "Eco Charger B4", transactions: 700, balance: 7000.00 },
+    { id: "CHG-005", name: "Highway Charger D1", transactions: 950, balance: 10000.00 },
+  ],
+  "GreenTech SPA": [
+    { id: "CHG-006", name: "Green Charger G1", transactions: 600, balance: 6000.00 },
+    { id: "CHG-007", name: "Green Charger G2", transactions: 800, balance: 9000.00 },
+  ],
+};
 
-// Register custom node types
+// Custom central node component
+const CustomCentralNode = () => (
+  <div className="flex flex-col items-center justify-center w-full h-full">
+    <div className="text-2xl font-bold mb-2">DOBI</div>
+    <div className="relative w-16 h-16">
+      <Image
+        src="/icons/dobi-icon.png"
+        alt="DOBI Icon"
+        fill
+        className="object-contain"
+        style={{ borderRadius: "50%" }}
+      />
+    </div>
+  </div>
+);
+
 const nodeTypes = {
-  centralNode: CentralNode,
+  centralNode: CustomCentralNode,
+};
+
+// Add this edge type configuration at the top level
+const edgeTypes = {
+  custom: {
+    style: {
+      stroke: '#FFFFFF',
+      strokeWidth: 3,
+    },
+  },
 };
 
 export default function BubbleMap() {
@@ -48,57 +81,75 @@ export default function BubbleMap() {
     const centerX = window.innerWidth / 2;
     const centerY = window.innerHeight / 2;
 
-    // Central DOBI Bubble
+    // Central DOBI Node
     const centralNode: Node = {
       id: "central",
       type: "centralNode",
       data: { label: "DOBI" },
       position: { x: centerX, y: centerY },
-      draggable: true,
-    };
-
-    // Charger Bubbles arranged in a circle
-    const chargerNodes: Node[] = chargers.map((charger, index) => ({
-      id: charger.id,
-      data: { label: charger.name },
-      position: {
-        x: centerX + Math.cos((index / chargers.length) * 2 * Math.PI) * 220,
-        y: centerY + Math.sin((index / chargers.length) * 2 * Math.PI) * 220,
-      },
-      draggable: true,
       style: {
-        width: "100px",
-        height: "100px",
-        backgroundColor: "#28A745",
+        width: 150,
+        height: 150,
         borderRadius: "50%",
+        backgroundColor: "#2D4EC8",
         color: "white",
-        textAlign: "center",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        cursor: "pointer",
-        padding: "10px",
-        border: "2px solid #1a752f",
-        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+        border: "4px solid #B5C8F9",
       },
-    }));
+    };
 
-    const nodesData: Node[] = [centralNode, ...chargerNodes];
+    let allNodes: Node[] = [centralNode];
+    let allEdges: Edge[] = [];
 
-    const edgesData: Edge[] = chargers.map((charger) => ({
-      id: `edge-${charger.id}`,
-      source: "central",
-      target: charger.id,
-      animated: true,
-      markerEnd: { type: MarkerType.ArrowClosed },
-      style: { 
-        strokeWidth: 2, 
-        stroke: "#2D4EC8",
-      },
-    }));
+    // Create nodes and edges for each company group
+    Object.entries(chargerGroups).forEach(([company, chargers], groupIndex) => {
+      const isLeftGroup = groupIndex === 0;
+      const baseX = isLeftGroup ? centerX - 400 : centerX + 400;
+      
+      chargers.forEach((charger, index) => {
+        const chargerNode: Node = {
+          id: charger.id,
+          data: { 
+            label: charger.name,
+            transactions: charger.transactions,
+            balance: charger.balance,
+            company: company,
+          },
+          position: {
+            x: baseX + (isLeftGroup ? -100 : 100),
+            y: centerY + (index * 120) - (chargers.length * 60) + 100,
+          },
+          style: {
+            width: 180,
+            padding: "15px",
+            backgroundColor: isLeftGroup ? "#28A745" : "#2D4EC8",
+            color: "white",
+            borderRadius: "12px",
+            textAlign: "center",
+            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+          },
+        };
+        allNodes.push(chargerNode);
 
-    setNodes(nodesData);
-    setEdges(edgesData);
+        // Simplified edge configuration
+        allEdges.push({
+          id: `edge-${charger.id}`,
+          source: "central",
+          target: charger.id,
+          type: "default",
+          animated: true,
+          style: {
+            stroke: "#FFFFFF",
+            strokeWidth: 3,
+          },
+        });
+      });
+    });
+
+    setNodes(allNodes);
+    setEdges(allEdges);
     setLoading(false);
   }, [setNodes, setEdges]);
 
@@ -129,6 +180,14 @@ export default function BubbleMap() {
           maxZoom={2}
           nodeTypes={nodeTypes}
           className="bg-transparent"
+          defaultEdgeOptions={{
+            type: "default",
+            animated: true,
+            style: {
+              stroke: "#FFFFFF",
+              strokeWidth: 3,
+            },
+          }}
         >
           <Background 
             color="#2D4EC8" 

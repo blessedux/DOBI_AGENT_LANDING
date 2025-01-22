@@ -32,11 +32,56 @@ const initialNodes = [
 ];
 
 const initialEdges = [
-  { id: "e1-2", source: "1", target: "2", type: "smoothstep", animated: true, sourceHandle: "right", targetHandle: "left", style: { stroke: "#2D4EC8", strokeWidth: 3 } },
-  { id: "e3-4", source: "3", target: "4", type: "smoothstep", animated: true, sourceHandle: "right", targetHandle: "left", style: { stroke: "#2D4EC8", strokeWidth: 3 } },
-  { id: "e5-6", source: "5", target: "6", type: "smoothstep", animated: true, sourceHandle: "right", targetHandle: "left", style: { stroke: "#2D4EC8", strokeWidth: 3 } },
-  { id: "e2-3", source: "2", target: "3", type: "step", animated: true, sourceHandle: "right", targetHandle: "right", style: { stroke: "#2D4EC8", strokeWidth: 3, borderRadius: 10 } },
-  { id: "e4-5", source: "4", target: "5", type: "step", animated: true, sourceHandle: "left", targetHandle: "left", style: { stroke: "#2D4EC8", strokeWidth: 3, borderRadius: 10 } },
+  { 
+    id: "e1-2", 
+    source: "1", 
+    target: "2", 
+    type: "smoothstep", 
+    animated: true, 
+    sourceHandle: "right", 
+    targetHandle: "left", 
+    style: { stroke: "#FFFFFF", strokeWidth: 3 } 
+  },
+  { 
+    id: "e3-4", 
+    source: "3", 
+    target: "4", 
+    type: "smoothstep", 
+    animated: true, 
+    sourceHandle: "right", 
+    targetHandle: "left", 
+    style: { stroke: "#FFFFFF", strokeWidth: 3 } 
+  },
+  { 
+    id: "e5-6", 
+    source: "5", 
+    target: "6", 
+    type: "smoothstep", 
+    animated: true, 
+    sourceHandle: "right", 
+    targetHandle: "left", 
+    style: { stroke: "#FFFFFF", strokeWidth: 3 } 
+  },
+  { 
+    id: "e2-3", 
+    source: "2", 
+    target: "3", 
+    type: "step", 
+    animated: true, 
+    sourceHandle: "right", 
+    targetHandle: "right", 
+    style: { stroke: "#FFFFFF", strokeWidth: 3, borderRadius: 10 } 
+  },
+  { 
+    id: "e4-5", 
+    source: "4", 
+    target: "5", 
+    type: "step", 
+    animated: true, 
+    sourceHandle: "left", 
+    targetHandle: "left", 
+    style: { stroke: "#FFFFFF", strokeWidth: 3, borderRadius: 10 } 
+  },
 ];
 
 // Custom node component
