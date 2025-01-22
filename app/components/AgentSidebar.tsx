@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Badge } from "./ui/Badge";
 import { ScrollArea } from "./ui/ScrollArea";
-import BubbleMap from "./BubbleMap";
 import { ChevronRight, ChevronLeft } from "lucide-react"; 
 import DeviceWorkflow from "./DeviceWorkflow";
 

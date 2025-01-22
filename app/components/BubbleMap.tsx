@@ -16,7 +16,6 @@ import {
 import "reactflow/dist/style.css";
 import { useSpring, animated } from "@react-spring/web";
 import CentralNode from "./ui/CentralNode";
-import Image from "next/image";
 import GlassmorphismWindow from "./ui/GlassmorphismWindow";
 
 // Charger data grouped by company
