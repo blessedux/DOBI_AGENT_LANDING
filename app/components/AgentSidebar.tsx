@@ -108,16 +108,16 @@ const chargers = [
 ];
 
 interface AgentSidebarProps {
-  setSelectedDevice: (device: string) => void;
-  selectedDevice: string | null;
+  setSelectedDevice: (device: typeof chargers[number] | null) => void;
+  selectedDevice: typeof chargers[number] | null;
 }
 
 export default function AgentSidebar({ setSelectedDevice, selectedDevice }: AgentSidebarProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true); 
   const [isWorkflowOpen, setIsWorkflowOpen] = useState(false);
 
-  const handleDeviceClick = (deviceId: string) => {
-    setSelectedDevice(deviceId);
+  const handleDeviceClick = (charger: typeof chargers[number]) => {
+    setSelectedDevice(charger);
     setIsWorkflowOpen(true);
   };
 
@@ -157,7 +157,7 @@ export default function AgentSidebar({ setSelectedDevice, selectedDevice }: Agen
                       ? "bg-[#B5C8F9]"
                       : "bg-card hover:bg-gray-100"
                   }`}
-                  onClick={() => handleDeviceClick(charger.id_charger)}
+                  onClick={() => handleDeviceClick(charger)}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="font-medium text-[#2D4EC8]">{charger.name}</h3>
