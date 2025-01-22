@@ -1,28 +1,24 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
+import React, { useCallback } from "react";
 import { ReactFlow, Background, Controls, useEdgesState, useNodesState, addEdge, Handle, Position } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { StraightEdge, StepEdge, SmoothStepEdge } from "@xyflow/react";
-import { BaseEdge, EdgeLabelRenderer } from "@xyflow/react";
+import BubbleMap from "./BubbleMap";
 
-
-// 🔹 Maintain all existing edge types
 const edgeTypes = {
   straight: StraightEdge,
   step: StepEdge,
   smoothstep: SmoothStepEdge,
 };
 
-// 🔹 Maintain all existing nodes & edges
 const nodes = [
   { id: "1", position: { x: 100, y: 50 }, type: "customNode", data: { headerLabel: "RWA", label: "EV-Charger", description: "Transaction Received", number: 1 } },
-  { id: "2", position: { x: 100 + 500, y: 50 }, type: "customNode", data: { headerLabel: "DBS", label: "DBS Accountability", description: "Logs financial & energy data", number: 2 } },
-  { id: "3", position: { x: 100 + 500, y: 50 + 350 }, type: "customNode", data: { headerLabel: "AI Core", label: "DOBI-CORE AI", description: "Allocates profits & costs", number: 3 } },
-  { id: "4", position: { x: 100, y: 50 + 350 }, type: "customNode", data: { headerLabel: "Security", label: "ZKP Secure Deposit", description: "Ensures tamper-proof fund transfers", number: 4 } },
-  { id: "5", position: { x: 100, y: 50 + 350 * 2 }, type: "customNode", data: { headerLabel: "Smart Contract", label: "Dobprotocol Pool", description: "Stores & manages investor funds", number: 5 } },
-  { id: "6", position: { x: 100 + 500, y: 50 + 350 * 2 }, type: "customNode", data: { headerLabel: "Tokenomics", label: "Token Distribution", description: "Profit distribution to token holders", number: 6 } },
+  { id: "2", position: { x: 600, y: 50 }, type: "customNode", data: { headerLabel: "DBS", label: "DBS Accountability", description: "Logs financial & energy data", number: 2 } },
+  { id: "3", position: { x: 600, y: 400 }, type: "customNode", data: { headerLabel: "AI Core", label: "DOBI-CORE AI", description: "Allocates profits & costs", number: 3 } },
+  { id: "4", position: { x: 100, y: 400 }, type: "customNode", data: { headerLabel: "Security", label: "ZKP Secure Deposit", description: "Ensures tamper-proof fund transfers", number: 4 } },
+  { id: "5", position: { x: 100, y: 800 }, type: "customNode", data: { headerLabel: "Smart Contract", label: "Dobprotocol Pool", description: "Stores & manages investor funds", number: 5 } },
+  { id: "6", position: { x: 600, y: 800 }, type: "customNode", data: { headerLabel: "Tokenomics", label: "Token Distribution", description: "Profit distribution to token holders", number: 6 } },
 ];
 
 const edges = [
@@ -33,7 +29,7 @@ const edges = [
   { id: "e4-5", source: "4", target: "5", type: "step", animated: true, sourceHandle: "left", targetHandle: "left", style: { stroke: "#2D4EC8", strokeWidth: 3, borderRadius: 10 } },
 ];
 
-// 🔹 Maintain existing custom node structure
+// Custom node component
 const CustomNode = ({ data }) => {
   return (
     <div className="relative flex flex-col items-center w-[300px]">
@@ -57,8 +53,8 @@ const CustomNode = ({ data }) => {
   );
 };
 
-// ✅ ADDING STATE TO SWITCH BETWEEN CHART & BUBBLEMAP
-export default function DobiChart({ selectedWorkflow }) {
+// ✅ Main DobiChart component - NOW Controlled by Navbar
+export default function DobiChart({ activeTab }) {
   const [nodesState, setNodes, onNodesChange] = useNodesState(nodes);
   const [edgesState, setEdges, onEdgesChange] = useEdgesState(edges ?? []);
 
@@ -66,7 +62,8 @@ export default function DobiChart({ selectedWorkflow }) {
 
   return (
     <div className="relative w-full h-screen overflow-hidden touch-none">
-      {selectedWorkflow === "architecture" ? (
+      {/* ✅ Render ReactFlow Chart OR BubbleMap based on activeTab from Navbar */}
+      {activeTab === "architecture" ? (
         <ReactFlow
           nodes={nodesState}
           edges={edgesState}
@@ -87,14 +84,13 @@ export default function DobiChart({ selectedWorkflow }) {
   );
 }
 
-// ✅ FIXED: Bubble Map Component (Ensures Proper Display)
+// ✅ BubbleMap Component
 function BubbleMap() {
-  const bubbleData = [
-    { id: "electricity_pool", label: "Electricity Payment Pool" },
-    { id: "validator_amount", label: "Validator Amount" },
-    { id: "payment_pool", label: "Payment Pool" },
-    { id: "agent_validator", label: "Agent Validator (IoT)" },
-    { id: "stream_income", label: "Stream Income" },
-  ];
-
+  return (
+    <div className="flex justify-center items-center w-full h-full">
+      <div className="w-32 h-32 bg-blue-500 rounded-full flex items-center justify-center shadow-lg">
+        <img src="/DOBI_icon.png" alt="DOBI Icon" className="w-20 h-20 object-contain" />
+      </div>
+    </div>
+  );
 }

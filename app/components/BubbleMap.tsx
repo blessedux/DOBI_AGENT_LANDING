@@ -1,43 +1,27 @@
-import { useSpring, animated } from "@react-spring/web";
+"use client";
 
-// Bubble data structure
-const bubbles = [
-  { id: 1, label: "Electricity Payment Pool" },
-  { id: 2, label: "Validator Amount" },
-  { id: 3, label: "Payment Pool" },
-  { id: 4, label: "Agent Validator Oracle (IoT)" },
-  { id: 5, label: "Stream Income" },
-];
+import { animated, useSpring } from "@react-spring/web";
+import { useState } from "react";
 
-export default function BubbleMap({ isVisible }) {
-  if (!isVisible) return null; // Hide when not active
+export default function BubbleMap() {
+  const [hovered, setHovered] = useState(false);
+
+  // Simple spring animation
+  const styles = useSpring({
+    transform: hovered ? "scale(1.2)" : "scale(1)",
+    config: { tension: 200, friction: 10 },
+  });
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center">
-      {/* Center Bubble - Device */}
-      <div className="absolute w-24 h-24 bg-blue-500 text-white flex items-center justify-center rounded-full shadow-md">
-        Device
-      </div>
-
-      {/* Outer Bubbles */}
-      {bubbles.map((bubble, index) => {
-        // Spring-based smooth animation
-        const bubbleSpring = useSpring({
-          x: Math.cos((index / bubbles.length) * Math.PI * 2) * 150,
-          y: Math.sin((index / bubbles.length) * Math.PI * 2) * 150,
-          config: { tension: 100, friction: 20 },
-        });
-
-        return (
-          <animated.div
-            key={bubble.id}
-            style={bubbleSpring}
-            className="absolute w-20 h-20 bg-green-500 text-white flex items-center justify-center rounded-full shadow-md cursor-pointer"
-          >
-            {bubble.label}
-          </animated.div>
-        );
-      })}
+    <div className="flex justify-center items-center h-full w-full">
+      <animated.div
+        className="w-20 h-20 bg-blue-500 rounded-full flex justify-center items-center text-white font-bold cursor-pointer"
+        style={styles}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+      >
+        🚗
+      </animated.div>
     </div>
   );
 }
