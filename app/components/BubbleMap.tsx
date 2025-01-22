@@ -11,12 +11,12 @@ import {
   MarkerType,
   Node,
   Edge,
-} from "@xyflow/react";
-import "@xyflow/react/dist/style.css";
+} from "reactflow";
+import "reactflow/dist/style.css";
 import { useSpring, animated } from "@react-spring/web";
 import CentralNode from "./ui/CentralNode";
 
-// Charger devices (from JSON structure)
+// Charger devices
 const chargers = [
   { id: "CHG-001", name: "Fast Charger A1" },
   { id: "CHG-002", name: "Eco Charger B3" },
@@ -31,12 +31,10 @@ const nodeTypes = {
 };
 
 export default function BubbleMap() {
-  // React Flow State
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [loading, setLoading] = React.useState(true);
 
-  // Animated Styles for the entire BubbleMap component
   const styles = useSpring({
     opacity: 1,
     transform: "scale(1)",
@@ -44,14 +42,11 @@ export default function BubbleMap() {
     config: { tension: 180, friction: 20 },
   });
 
-  // Initialize nodes and edges
   useEffect(() => {
     console.log("✅ BubbleMap.tsx is rendering!");
-    console.log("Initializing BubbleMap...");
 
-    // Define center to ensure nodes are within the viewport
-    const centerX = 300;
-    const centerY = 300;
+    const centerX = window.innerWidth / 2;
+    const centerY = window.innerHeight / 2;
 
     // Central DOBI Bubble
     const centralNode: Node = {
@@ -62,7 +57,7 @@ export default function BubbleMap() {
       draggable: true,
     };
 
-    // Charger Bubbles arranged in a circle around the central bubble
+    // Charger Bubbles arranged in a circle
     const chargerNodes: Node[] = chargers.map((charger, index) => ({
       id: charger.id,
       data: { label: charger.name },
@@ -82,51 +77,43 @@ export default function BubbleMap() {
         alignItems: "center",
         justifyContent: "center",
         cursor: "pointer",
+        padding: "10px",
+        border: "2px solid #1a752f",
+        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
       },
     }));
 
-    // Combine central node and charger nodes
     const nodesData: Node[] = [centralNode, ...chargerNodes];
 
-    // Connect Chargers to DOBI
     const edgesData: Edge[] = chargers.map((charger) => ({
       id: `edge-${charger.id}`,
       source: "central",
       target: charger.id,
       animated: true,
       markerEnd: { type: MarkerType.ArrowClosed },
-      style: { strokeWidth: 2, stroke: "#ccc" },
+      style: { 
+        strokeWidth: 2, 
+        stroke: "#2D4EC8",
+      },
     }));
 
     setNodes(nodesData);
     setEdges(edgesData);
     setLoading(false);
-
-    console.log("Nodes:", nodesData);
-    console.log("Edges:", edgesData);
   }, [setNodes, setEdges]);
 
-  // Handle node drag movement
   const handleNodesChange = useCallback(
-    (changes) => {
+    (changes: any) => {
       onNodesChange(changes);
     },
     [onNodesChange]
   );
 
-  // Debugging check
   if (loading) return <div>Loading BubbleMap...</div>;
 
-  // Render the map with correct size
-  console.log("BubbleMap component is rendering...");
-
   return (
-    <div
-      className="relative w-full h-screen"
-      style={{ width: "100vw", height: "100vh" }} // Ensures the container occupies the full viewport
-    >
-      <animated.div style={styles} className="w-full h-full">
-      
+    <div className="relative w-full h-full">
+      <animated.div style={styles} className="w-full h-full relative">
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -141,10 +128,16 @@ export default function BubbleMap() {
           minZoom={0.5}
           maxZoom={2}
           nodeTypes={nodeTypes}
+          className="bg-transparent"
         >
-          <MiniMap />
+          <Background 
+            color="#2D4EC8" 
+            gap={20} 
+            size={1}
+            style={{ opacity: 0.2 }}
+          />
           <Controls />
-          <Background />
+          <MiniMap />
         </ReactFlow>
       </animated.div>
     </div>

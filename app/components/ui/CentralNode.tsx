@@ -1,14 +1,22 @@
-import React from "react";
-import { Handle, Position } from "@xyflow/react";
+"use client";
 
-const CentralNode = ({ data }) => {
-  return (
-    <div className="central-node flex flex-col items-center justify-center">
-      <img src="/icons/dobi-icon.png" alt="DOBI" className="w-24 h-24" />
-      <Handle type="target" position={Position.Top} />
-      <Handle type="source" position={Position.Bottom} />
-    </div>
-  );
-};
+   import React from "react";
+   import { Handle, Position } from "reactflow";
 
-export default CentralNode;
+   interface CentralNodeProps {
+     data: {
+       label: string;
+     };
+   }
+
+   const CentralNode: React.FC<CentralNodeProps> = ({ data }) => {
+     return (
+       <div className="bg-blue-500 text-white p-4 rounded-lg shadow-lg text-center">
+         <div className="font-bold">{data.label}</div>
+         <Handle type="target" position={Position.Top} />
+         <Handle type="source" position={Position.Bottom} />
+       </div>
+     );
+   };
+
+   export default CentralNode;

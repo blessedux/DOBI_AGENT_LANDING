@@ -40,7 +40,7 @@ export default function LogsViewer() {
 
   return (
     <div
-      className="fixed bottom-0 left-0 w-full bg-gray-900 bg-opacity-40 backdrop-blur-sm border-t border-gray-700 flex flex-col transition-all duration-300"
+      className="fixed bottom-0 left-0 w-full bg-gray-900 text-white bg-opacity-40 backdrop-blur-sm border-t border-gray-700 flex flex-col transition-all duration-300"
       style={{ height: `${height}px` }}
     >
       {/* Drag Handle (Now Clickable) */}
