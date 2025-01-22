@@ -15,6 +15,7 @@ import "reactflow/dist/style.css";
 import { StraightEdge, StepEdge, SmoothStepEdge } from "reactflow";
 import BubbleMap from "./BubbleMap";
 import { useTransition, animated } from "@react-spring/web";
+import GlassmorphismWindow from "./ui/GlassmorphismWindow";
 
 const edgeTypes = {
   straight: StraightEdge,
@@ -130,42 +131,46 @@ export default function DobiChart({ activeTab }: DobiChartProps) {
   });
 
   return (
-    <div className="relative w-full h-screen overflow-hidden touch-none">
-      {transitions((styles, tab) => (
-        <animated.div
-          style={{
-            ...styles,
-            position: "absolute",
-            width: "100%",
-            height: "100%",
-            visibility: tab === activeTab ? "visible" : "hidden",
-          }}
-        >
-          {tab === "architecture" ? (
-            <ReactFlow
-              nodes={nodes}
-              edges={edges}
-              onNodesChange={onNodesChange}
-              onEdgesChange={onEdgesChange}
-              onConnect={onConnect}
-              fitView
-              nodeTypes={{ customNode: CustomNode }}
-              edgeTypes={edgeTypes}
-              className="w-full h-full min-h-[500px] bg-transparent"
-            >
-              <Background 
-                color="#2D4EC8" 
-                gap={20} 
-                size={1}
-                style={{ opacity: 0.2 }}
-              />
-              <Controls />
-            </ReactFlow>
-          ) : (
-            <BubbleMap />
-          )}
-        </animated.div>
-      ))}
+    <div className="flex-1 relative">
+      <div className="relative w-full h-screen overflow-hidden touch-none">
+        <GlassmorphismWindow />
+        
+        {transitions((styles, tab) => (
+          <animated.div
+            style={{
+              ...styles,
+              position: "absolute",
+              width: "100%",
+              height: "100%",
+              visibility: tab === activeTab ? "visible" : "hidden",
+            }}
+          >
+            {tab === "architecture" ? (
+              <ReactFlow
+                nodes={nodes}
+                edges={edges}
+                onNodesChange={onNodesChange}
+                onEdgesChange={onEdgesChange}
+                onConnect={onConnect}
+                fitView
+                nodeTypes={{ customNode: CustomNode }}
+                edgeTypes={edgeTypes}
+                className="w-full h-full min-h-[500px] bg-transparent"
+              >
+                <Background 
+                  color="#2D4EC8" 
+                  gap={20} 
+                  size={1}
+                  style={{ opacity: 0.2 }}
+                />
+                <Controls />
+              </ReactFlow>
+            ) : (
+              <BubbleMap />
+            )}
+          </animated.div>
+        ))}
+      </div>
     </div>
   );
 }
