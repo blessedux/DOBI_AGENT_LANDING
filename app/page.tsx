@@ -2,19 +2,20 @@
 
 import React, { useState } from "react";
 import Navbar from "./components/ui/Navbar";
-import DobiChart from "./components/DobiChart";
+import DobiChart, { Charger } from "./components/DobiChart";
 import AgentSidebar from "./components/AgentSidebar";
 import LogsViewer from "./components/ui/LogsViewer";
 import BackgroundScene from "./components/BackgroundScene";
 import BubbleMap from "./components/BubbleMap";
 import DeviceWorkflow from "./components/DeviceWorkflow";
+import MonitorFlowChart from "./components/MonitorFlowChart";
 
 export default function Home() {
   // Maintain active tab state
-  const [activeTab, setActiveTab] = useState("architecture");
+  const [activeTab, setActiveTab] = useState<"architecture" | "devices">("architecture");
   
   // Maintain selected device state
-  const [selectedDevice, setSelectedDevice] = useState<string | null>(null);
+  const [selectedDevice, setSelectedDevice] = useState<Charger | null>(null);
 
   // Maintain workflow state
   const [isWorkflowOpen, setIsWorkflowOpen] = useState(false);
@@ -56,6 +57,11 @@ export default function Home() {
         onClose={handleCloseWorkflow} 
         selectedDevice={selectedDevice} 
       />
+
+      {/* Monitor Flow Chart */}
+      {selectedDevice && (
+        <MonitorFlowChart chargerId={selectedDevice.id_charger} />
+      )}
     </div>
   );
 }

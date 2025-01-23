@@ -8,10 +8,12 @@ import ReactFlow, {
   Edge,
   useNodesState,
   useEdgesState,
+  ReactFlowInstance,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import { motion, AnimatePresence, useAnimationControls } from "framer-motion";
 import { X } from "lucide-react";
+import { Charger } from './DobiChart';
 
 interface WorkflowStep {
   id: string;
@@ -26,7 +28,7 @@ interface WorkflowStep {
 interface DeviceWorkflowProps {
   isOpen: boolean;
   onClose: () => void;
-  selectedDevice: string;
+  selectedDevice: Charger | null;
 }
 
 const workflowData = {
@@ -130,7 +132,7 @@ export default function DeviceWorkflow({ isOpen, onClose, selectedDevice }: Devi
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [activeStepIndex, setActiveStepIndex] = useState(0);
-  const [reactFlowInstance, setReactFlowInstance] = useState(null);
+  const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
   const [progress, setProgress] = useState(0);
 
   // Initialize nodes and edges
@@ -335,7 +337,7 @@ export default function DeviceWorkflow({ isOpen, onClose, selectedDevice }: Devi
             {/* Right side - Workflow */}
             <div className="flex-1">
               <h2 className="text-white text-xl mb-4">
-                Workflow for Device: {selectedDevice}
+                Workflow for Device: {selectedDevice?.name || 'Unknown Device'}
               </h2>
               <div className="w-full h-[700px] rounded-lg overflow-hidden">
                 <ReactFlow
@@ -346,7 +348,7 @@ export default function DeviceWorkflow({ isOpen, onClose, selectedDevice }: Devi
                   nodeTypes={{ custom: CustomNode }}
                   fitView={false}
                   className="bg-transparent"
-                  defaultZoom={1}
+                  defaultViewport={{ x: -400, y: 0, zoom: 1 }}
                   minZoom={1}
                   maxZoom={1}
                   onInit={setReactFlowInstance}

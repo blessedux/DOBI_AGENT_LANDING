@@ -1,10 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 
-export default function Navbar({ activeTab, setActiveTab }) {
+interface NavbarProps {
+  activeTab: "architecture" | "devices";
+  setActiveTab: (tab: "architecture" | "devices") => void;
+}
+
+export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
   return (
     <nav className="w-full bg-white shadow-md text-gray-900 p-4 flex items-center justify-between">
       {/* Left Section - Logo */}
@@ -26,7 +31,7 @@ export default function Navbar({ activeTab, setActiveTab }) {
               className={`px-4 py-2 rounded-md transition-all ${
                 activeTab === key ? "bg-blue-600 text-white" : "bg-gray-300 hover:bg-gray-400"
               }`}
-              onClick={() => setActiveTab(key)} // ✅ Set activeTab state
+              onClick={() => setActiveTab(key as "architecture" | "devices")}
             >
               {key === "architecture" ? "Architecture" : "Devices"}
             </button>

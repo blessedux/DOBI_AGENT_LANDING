@@ -12,6 +12,7 @@ import {
   Edge,
   EdgeTypes,
   MarkerType,
+  ReactFlowInstance,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import { useSpring, animated } from "@react-spring/web";
@@ -37,11 +38,16 @@ const nodeTypes = {
   centralNode: CentralNode,
 };
 
-export default function BubbleMap() {
+// Add interface for props
+interface BubbleMapProps {
+  selectedChargerId?: string;
+}
+
+export default function BubbleMap({ selectedChargerId }: BubbleMapProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [loading, setLoading] = React.useState(true);
-  const [reactFlowInstance, setReactFlowInstance] = React.useState(null);
+  const [reactFlowInstance, setReactFlowInstance] = React.useState<ReactFlowInstance | null>(null);
 
   const styles = useSpring({
     opacity: 1,
@@ -150,10 +156,11 @@ export default function BubbleMap() {
           onEdgesChange={onEdgesChange}
           fitView={false}
           className="bg-transparent"
-          defaultZoom={0.75}
+          defaultViewport={{ x: 0, y: 0, zoom: 0.75 }}
           minZoom={0.5}
           maxZoom={1.5}
           onInit={setReactFlowInstance}
+          nodeTypes={nodeTypes}
         >
           <Background color="#2D4EC8" gap={20} size={1} style={{ opacity: 0.1 }} />
           <Controls className="text-white" />

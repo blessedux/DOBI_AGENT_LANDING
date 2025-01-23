@@ -10,12 +10,25 @@ import {
   addEdge,
   Handle,
   Position,
+  Connection,
+  Edge,
+  Node,
+  NodeTypes,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import { StraightEdge, StepEdge, SmoothStepEdge } from "reactflow";
 import BubbleMap from "./BubbleMap";
 import { useTransition, animated } from "@react-spring/web";
 import GlassmorphismWindow from "./ui/GlassmorphismWindow";
+import Image from 'next/image';
+
+interface CustomNodeData {
+  headerLabel: string;
+  label: string;
+  description: string;
+  number: number;
+  image?: string;
+}
 
 const edgeTypes = {
   straight: StraightEdge,
@@ -23,7 +36,7 @@ const edgeTypes = {
   smoothstep: SmoothStepEdge,
 };
 
-const initialNodes = [
+const initialNodes: Node<CustomNodeData>[] = [
   { id: "1", position: { x: 100, y: 50 }, type: "customNode", data: { headerLabel: "RWA", label: "EV-Charger", description: "Transaction Received", number: 1 } },
   { id: "2", position: { x: 600, y: 50 }, type: "customNode", data: { headerLabel: "DBS", label: "DBS Accountability", description: "Logs financial & energy data", number: 2 } },
   { id: "3", position: { x: 600, y: 400 }, type: "customNode", data: { headerLabel: "AI Core", label: "DOBI-CORE AI", description: "Allocates profits & costs", number: 3 } },
@@ -32,7 +45,7 @@ const initialNodes = [
   { id: "6", position: { x: 600, y: 800 }, type: "customNode", data: { headerLabel: "Tokenomics", label: "Token Distribution", description: "Profit distribution to token holders", number: 6 } },
 ];
 
-const initialEdges = [
+const initialEdges: Edge[] = [
   { 
     id: "e1-2", 
     source: "1", 
@@ -85,8 +98,7 @@ const initialEdges = [
   },
 ];
 
-// Custom node component
-const CustomNode = ({ data }) => {
+const CustomNode = ({ data }: { data: CustomNodeData }) => {
   return (
     <div className="relative flex flex-col items-center w-[300px]">
       <div className="w-full bg-[#B5C8F9] text-[#2D4EC8] font-bold text-lg py-2 text-center rounded-t-lg">
@@ -98,7 +110,16 @@ const CustomNode = ({ data }) => {
         <Handle type="target" position={Position.Right} id="right" className="absolute -right-2 top-1/2 transform -translate-y-1/2" />
         <Handle type="source" position={Position.Right} id="right" className="absolute -right-2 top-1/2 transform -translate-y-1/2" />
         <div className="w-[260px] h-[200px] bg-white flex flex-col justify-between items-center shadow-md rounded-lg p-4 z-20">
-          {data.image && <img src={data.image} alt={data.label} className="w-16 h-16 object-contain" />}
+          {data.image && (
+            <div className="relative w-16 h-16">
+              <Image
+                src={data.image}
+                alt={data.label}
+                fill
+                className="object-contain"
+              />
+            </div>
+          )}
           <div className="text-[#2D4EC8] font-bold text-md text-center">{data.label}</div>
           <div className="text-gray-600 text-sm text-center">{data.description}</div>
           <div className="w-8 h-8 bg-[#2D4EC8] rounded-full flex items-center justify-center text-white">
@@ -114,12 +135,35 @@ interface DobiChartProps {
   activeTab: string;
 }
 
+const nodeTypes: NodeTypes = {
+  customNode: CustomNode,
+};
+
+export interface Charger {
+  id_charger: string;
+  name: string;
+  model: string;
+  image: string;
+  location: {
+    latitude: number;
+    longitude: number;
+    address: string;
+  };
+  company_owner: string;
+  creation_date: string;
+  status: string;
+  transactions: number;
+  cost_generated: number;
+  income_generated: number;
+  balance_total: number;
+}
+
 export default function DobiChart({ activeTab }: DobiChartProps) {
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [nodes, setNodes, onNodesChange] = useNodesState<CustomNodeData>(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   
   const onConnect = useCallback(
-    (params) => setEdges((eds) => addEdge({ ...params, animated: true }, eds)),
+    (params: Connection) => setEdges((eds) => addEdge({ ...params, animated: true }, eds)),
     [setEdges]
   );
 
@@ -153,7 +197,7 @@ export default function DobiChart({ activeTab }: DobiChartProps) {
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
                 fitView
-                nodeTypes={{ customNode: CustomNode }}
+                nodeTypes={nodeTypes}
                 edgeTypes={edgeTypes}
                 className="w-full h-full min-h-[500px] bg-transparent"
               >

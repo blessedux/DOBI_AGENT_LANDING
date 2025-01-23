@@ -9,8 +9,8 @@ import {
   MarkerType,
   Node,
   Edge,
-} from "@xyflow/react";
-import "@xyflow/react/dist/style.css";
+} from "reactflow";
+import "reactflow/dist/style.css";
 import { useSpring, animated } from "@react-spring/web";
 
 interface MonitorFlowChartProps {

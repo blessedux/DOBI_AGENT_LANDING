@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Badge } from "./ui/Badge";
 import { ScrollArea } from "./ui/ScrollArea";
 import { ChevronRight, ChevronLeft } from "lucide-react"; 
 import DeviceWorkflow from "./DeviceWorkflow";
+import { Charger } from "./DobiChart";
 
 const chargers = [
   {
@@ -108,15 +109,15 @@ const chargers = [
 ];
 
 interface AgentSidebarProps {
-  setSelectedDevice: (device: typeof chargers[number] | null) => void;
-  selectedDevice: typeof chargers[number] | null;
+  setSelectedDevice: (device: Charger | null) => void;
+  selectedDevice: Charger | null;
 }
 
-export default function AgentSidebar({ setSelectedDevice, selectedDevice }: AgentSidebarProps) {
+const AgentSidebar: React.FC<AgentSidebarProps> = ({ setSelectedDevice, selectedDevice }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true); 
   const [isWorkflowOpen, setIsWorkflowOpen] = useState(false);
 
-  const handleDeviceClick = (charger: typeof chargers[number]) => {
+  const handleDeviceClick = (charger: Charger) => {
     setSelectedDevice(charger);
     setIsWorkflowOpen(true);
   };
@@ -184,4 +185,6 @@ export default function AgentSidebar({ setSelectedDevice, selectedDevice }: Agen
       />
     </>
   );
-}
+};
+
+export default AgentSidebar;

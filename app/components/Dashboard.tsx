@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import AgentSidebar from "./AgentSidebar";
 import BubbleMap from "./BubbleMap";
-import DobiChart from "./DobiChart";
+import DobiChart, { Charger } from "./DobiChart";
 import MonitorFlowChart from "./MonitorFlowChart";
 import BackgroundScene from "./BackgroundScene"; // Import the BackgroundScene component
 
@@ -11,10 +11,24 @@ interface DashboardProps {}
 
 export default function Dashboard(props: DashboardProps) {
   const [activeTab, setActiveTab] = useState<"architecture" | "devices">("architecture");
-  const [selectedChargerId, setSelectedChargerId] = useState<string | null>(null);
+  const [selectedDevice, setSelectedDevice] = useState<Charger | null>(null);
 
   const handleSelectCharger = (chargerId: string) => {
-    setSelectedChargerId(chargerId);
+    const charger: Charger = {
+      id_charger: chargerId,
+      name: "",
+      model: "",
+      image: "",
+      location: { latitude: 0, longitude: 0, address: "" },
+      company_owner: "",
+      creation_date: "",
+      status: "",
+      transactions: 0,
+      cost_generated: 0,
+      income_generated: 0,
+      balance_total: 0,
+    };
+    setSelectedDevice(charger);
     setActiveTab("devices"); // Optionally switch to devices tab upon selection
   };
 
@@ -26,8 +40,8 @@ export default function Dashboard(props: DashboardProps) {
       <div className="flex h-full">
         {/* Agent Sidebar */}
         <AgentSidebar
-          onSelectCharger={handleSelectCharger}
-          selectedChargerId={selectedChargerId}
+          setSelectedDevice={setSelectedDevice}
+          selectedDevice={selectedDevice}
         />
 
         {/* Main Content Area */}
@@ -56,12 +70,12 @@ export default function Dashboard(props: DashboardProps) {
           {activeTab === "architecture" ? (
             <DobiChart activeTab={activeTab} />
           ) : (
-            <BubbleMap selectedChargerId={selectedChargerId} />
+            <BubbleMap selectedChargerId={selectedDevice?.id_charger} />
           )}
 
           {/* Monitor Flow Chart */}
-          {selectedChargerId && (
-            <MonitorFlowChart chargerId={selectedChargerId} />
+          {selectedDevice && (
+            <MonitorFlowChart chargerId={selectedDevice.id_charger} />
           )}
         </div>
       </div>
