@@ -2,6 +2,10 @@
 
 import React, { useEffect, useState } from "react";
 
+interface GlassmorphismWindowProps {
+  activeTab: "architecture" | "devices";
+}
+
 const bulletPoints = [
   "Decentralized Financial Engine – The Dobi Agent is the core automation layer of DOB Protocol, enabling trustless benefit distribution in tokenized RWA investments.",
   "Autonomous Smart Contract System – It operates without intermediaries, ensuring transparent and efficient financial flows.",
@@ -17,7 +21,7 @@ const bulletPoints = [
   "Foundation for Future Finance – The Dobi Agent is the backbone of DOB Protocol's long-term vision, bringing decentralized financial automation to global investments.",
 ];
 
-const GlassmorphismWindow: React.FC = () => {
+const GlassmorphismWindow: React.FC<GlassmorphismWindowProps> = ({ activeTab }) => {
   const [currentText, setCurrentText] = useState("");
   const [currentBulletIndex, setCurrentBulletIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -25,7 +29,13 @@ const GlassmorphismWindow: React.FC = () => {
   const deletingSpeed = 15; // Speed for deleting
   const pauseDuration = 4000; // 4 seconds pause when text is complete
 
+  // Only run the typing effect when the architecture tab is active
   useEffect(() => {
+    if (activeTab !== "architecture") {
+      setCurrentText("");
+      return;
+    }
+
     let timeout: NodeJS.Timeout;
 
     if (isDeleting) {
@@ -51,7 +61,10 @@ const GlassmorphismWindow: React.FC = () => {
     }
 
     return () => clearTimeout(timeout);
-  }, [currentText, currentBulletIndex, isDeleting]);
+  }, [currentText, currentBulletIndex, isDeleting, activeTab]);
+
+  // Don't render anything if not on architecture tab
+  if (activeTab !== "architecture") return null;
 
   return (
     <div className="absolute top-20 left-4 z-30 p-6 rounded-lg backdrop-blur-md bg-gray-800/50 border border-gray-300/50 shadow-lg w-[300px]">

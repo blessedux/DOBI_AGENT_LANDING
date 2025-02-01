@@ -1,19 +1,17 @@
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
-import { cors } from '@/lib/cors';  // We'll create this
+import { cors } from '../../lib/cors';
+import { LogEntrySchema } from '../../lib/validations';
 
-// Define the log entry type for smart contract interactions
-export interface LogEntry {
-  sender: string;          // Wallet address that initiated the transaction
-  amount: string;          // Amount involved in the transaction
-  txHash: string;          // Transaction hash
-  timestamp: string;       // ISO timestamp of the transaction
-  status: 'pending' | 'completed' | 'failed';  // Transaction status
-  network: string;         // Network name (e.g., 'mantle-testnet')
-}
-
-// Temporary in-memory storage (replace with database in production)
-let logs: LogEntry[] = [];
+// Keep only what we need
+let logs: Array<{
+  sender: string;
+  amount: string;
+  txHash: string;
+  timestamp: string;
+  status: 'pending' | 'completed' | 'failed';
+  network: string;
+}> = [];
 
 /**
  * POST /api/logs
@@ -34,21 +32,15 @@ let logs: LogEntry[] = [];
  * }
  */
 export async function POST(request: Request) {
-  // Handle CORS preflight requests
-  if (request.method === 'OPTIONS') {
-    return new NextResponse(null, { status: 204, headers: cors });
-  }
-
   try {
-    const response = NextResponse.next();
-    // Add CORS headers to all responses
-    Object.entries(cors).forEach(([key, value]) => {
-      response.headers.set(key, value);
-    });
+    // Handle CORS
+    if (request.method === 'OPTIONS') {
+      return new NextResponse(null, { status: 204, headers: cors });
+    }
 
     const headersList = headers();
     const apiKey = headersList.get('x-api-key');
-    
+
     // Validate API key
     if (!apiKey || apiKey !== process.env.API_KEY) {
       return NextResponse.json(
@@ -59,28 +51,20 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     
-    // Validate required fields
-    if (!body.sender || !body.amount || !body.txHash || !body.timestamp) {
+    // Validate request body with Zod
+    const validationResult = LogEntrySchema.safeParse(body);
+    if (!validationResult.success) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Invalid request body', details: validationResult.error },
         { status: 400 }
       );
     }
 
-    // Add the log entry
-    const newLog: LogEntry = {
-      sender: body.sender,
-      amount: body.amount,
-      txHash: body.txHash,
-      timestamp: body.timestamp,
-      status: body.status || 'pending',
-      network: body.network || 'mantle-testnet'
-    };
-
-    logs.push(newLog);
+    // Store in memory
+    logs.push(validationResult.data);
 
     return NextResponse.json(
-      { message: 'Log received successfully', log: newLog },
+      { message: 'Log received successfully', log: validationResult.data },
       { status: 201 }
     );
   } catch (error) {

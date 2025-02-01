@@ -9,6 +9,7 @@ import BackgroundScene from "./components/BackgroundScene";
 import BubbleMap from "./components/BubbleMap";
 import DeviceWorkflow from "./components/DeviceWorkflow";
 import MonitorFlowChart from "./components/MonitorFlowChart";
+import GlassmorphismWindow from "./components/ui/GlassmorphismWindow";
 
 export default function Home() {
   // Maintain active tab state
@@ -52,6 +53,9 @@ export default function Home() {
           
           {/* Pass activeTab to DobiChart */}
           <DobiChart activeTab={activeTab} />
+          
+          {/* Pass activeTab to GlassmorphismWindow */}
+          <GlassmorphismWindow activeTab={activeTab} />
         </main>
 
         {/* LogsViewer - Positioned absolutely */}
