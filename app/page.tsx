@@ -6,6 +6,8 @@ import AgentSidebar from "./components/AgentSidebar";
 import Dashboard from "./components/Dashboard";
 import BackgroundScene from "./components/BackgroundScene";
 import type { Charger } from "./components/DobiChart";
+import LogsViewer from './components/ui/LogsViewer';
+import 'reactflow/dist/style.css';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<"architecture" | "devices">("architecture");
@@ -24,18 +26,20 @@ export default function Home() {
         />
 
         <main className="flex-1 flex relative z-10">
-        <AgentSidebar
-  setSelectedDevice={setSelectedDevice}
-  selectedDevice={selectedDevice}
-  isSidebarOpen={isSidebarOpen}  // ✅ This should now be valid
-  setIsSidebarOpen={setIsSidebarOpen} // ✅ This should now be valid
-/>
+          <AgentSidebar 
+            setSelectedDevice={setSelectedDevice} 
+            selectedDevice={selectedDevice} 
+            isSidebarOpen={isSidebarOpen}
+            setIsSidebarOpen={setIsSidebarOpen}
+          />
           
           <Dashboard 
             activeTab={activeTab}
             selectedDevice={selectedDevice}
           />
         </main>
+
+        <LogsViewer />
       </div>
     </div>
   );

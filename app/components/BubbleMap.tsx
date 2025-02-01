@@ -1,8 +1,20 @@
 "use client";
 
-import React from 'react';
-import { useSpring, animated } from '@react-spring/web';
-import type { Charger } from './DobiChart';  // Import the Charger type
+import React, { useCallback } from 'react';
+import ReactFlow, {
+  MiniMap,
+  Controls,
+  Background,
+  useNodesState,
+  useEdgesState,
+  Node,
+  Edge,
+  ReactFlowProvider,
+  useReactFlow,
+} from 'reactflow';
+import 'reactflow/dist/style.css';
+import type { Charger } from './DobiChart';
+import Image from 'next/image';
 
 // Define chargers data
 const chargers: Charger[] = [
@@ -37,52 +49,122 @@ const chargers: Charger[] = [
   // ... add other chargers
 ];
 
+// Custom Node Component for DOBI center node
+const DobiNode = ({ data }: { data: any }) => (
+  <div className="w-28 h-28 bg-white rounded-full flex items-center justify-center shadow-lg">
+    <div className="w-full h-full p-3 rounded-full bg-white flex items-center justify-center">
+      <Image 
+        src="/icons/dobi-icon.png" 
+        alt="DOBI"
+        width={112}
+        height={112}
+        className="w-full h-full object-contain"
+      />
+    </div>
+  </div>
+);
+
+// Custom Node Component for charger nodes
+const ChargerNode = ({ data }: { data: any }) => (
+  <div 
+    className={`w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110
+      ${data.status === 'active' ? 'bg-[#86efac]' : 'bg-[#a5b4fc]'}`}
+    style={{ opacity: 0.8 }}
+  >
+    <div className="text-center">
+      <div className="text-sm font-bold text-gray-800">
+        {data.name.split(' ').pop()}
+      </div>
+      <div className="text-xs text-gray-600">
+        {data.transactions} tx
+      </div>
+    </div>
+  </div>
+);
+
+// Register custom nodes
+const nodeTypes = {
+  dobiNode: DobiNode,
+  chargerNode: ChargerNode,
+};
+
 interface BubbleMapProps {
   selectedChargerId?: string;
   activeTab: "architecture" | "devices";
 }
 
-export default function BubbleMap({ selectedChargerId, activeTab }: BubbleMapProps) {
-  const styles = useSpring({
-    opacity: 1,
-    transform: "scale(1)",
-    from: { opacity: 0, transform: "scale(0.95)" },
-    config: { tension: 180, friction: 20 },
-  });
+function Flow({ selectedChargerId, activeTab }: BubbleMapProps) {
+  const { setViewport } = useReactFlow();
+  const radius = 200;
+  const centerX = window.innerWidth / 2;
+  const centerY = window.innerHeight / 2;
+
+  // Set initial viewport on mount
+  React.useEffect(() => {
+    setViewport({ x: 0, y: 0, zoom: 0.75 });
+  }, [setViewport]);
+
+  const initialNodes: Node[] = [
+    {
+      id: 'dobi-center',
+      type: 'dobiNode',
+      position: { x: centerX - 56, y: centerY - 56 },
+      data: { label: 'DOBI' },
+    },
+    ...chargers.map((charger, index) => {
+      const angle = (index * (360 / chargers.length)) * (Math.PI / 180);
+      const x = centerX + Math.cos(angle) * radius - 32;
+      const y = centerY + Math.sin(angle) * radius - 32;
+      
+      return {
+        id: charger.id_charger,
+        type: 'chargerNode',
+        position: { x, y },
+        data: { ...charger },
+      };
+    }),
+  ];
+
+  const initialEdges: Edge[] = chargers.map((charger) => ({
+    id: `edge-${charger.id_charger}`,
+    source: 'dobi-center',
+    target: charger.id_charger,
+    style: { 
+      stroke: charger.status === 'active' ? '#86efac' : '#a5b4fc',
+      strokeWidth: 2,
+      opacity: 0.4,
+    },
+    type: 'straight',
+  }));
+
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
   return (
-    <div className="relative w-full h-full">
-      <animated.div style={styles} className="w-full h-full flex items-center justify-center">
-        <div className="relative w-[600px] h-[600px]">
-          {/* Central DOBI Node */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-[#2D4EC8] rounded-full flex items-center justify-center text-white font-bold shadow-lg">
-            DOBI
-          </div>
-          
-          {/* Surrounding Nodes */}
-          {chargers.map((charger, index) => {
-            const angle = (index * (360 / chargers.length)) * (Math.PI / 180);
-            const radius = 200; // Distance from center
-            const x = Math.cos(angle) * radius;
-            const y = Math.sin(angle) * radius;
-            
-            return (
-              <div
-                key={charger.id_charger}
-                className={`absolute w-16 h-16 rounded-full flex items-center justify-center text-white font-medium transition-all duration-300 hover:scale-110 shadow-lg cursor-pointer
-                  ${charger.status === 'active' ? 'bg-green-400' : 'bg-blue-400'}
-                  ${selectedChargerId === charger.id_charger ? 'ring-4 ring-[#2D4EC8]' : ''}`}
-                style={{
-                  left: `calc(50% + ${x}px - 2rem)`,
-                  top: `calc(50% + ${y}px - 2rem)`,
-                }}
-              >
-                {charger.name.split(' ').pop()}
-              </div>
-            );
-          })}
-        </div>
-      </animated.div>
+    <ReactFlow
+      nodes={nodes}
+      edges={edges}
+      onNodesChange={onNodesChange}
+      onEdgesChange={onEdgesChange}
+      nodeTypes={nodeTypes}
+      fitView
+      className="bg-white"
+      minZoom={0.5}
+      maxZoom={1.5}
+    >
+      <Controls />
+      <Background color="#aaa" gap={16} />
+    </ReactFlow>
+  );
+}
+
+// Wrap the component with ReactFlowProvider
+export default function BubbleMap(props: BubbleMapProps) {
+  return (
+    <div className="w-full h-full bg-white">
+      <ReactFlowProvider>
+        <Flow {...props} />
+      </ReactFlowProvider>
     </div>
   );
 }

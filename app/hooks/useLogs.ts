@@ -1,41 +1,43 @@
 import { useState, useEffect } from 'react';
-import { LogEntrySchema } from '../lib/validations';
-import type { z } from 'zod';
-
-type LogEntry = z.infer<typeof LogEntrySchema>;
+import type { TransactionLog } from '../types/logs';
+import { env, validateEnv } from '../config/env';
 
 export function useLogs() {
-  const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [logs, setLogs] = useState<TransactionLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const response = await fetch('/api/logs', {
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': process.env.NEXT_PUBLIC_API_KEY || ''
-          },
-          credentials: 'include' // If you need cookies
-        });
-        
-        if (!response.ok) throw new Error('Failed to fetch logs');
+        const response = await fetch('/api/logs');
+        console.log('Response status:', response.status);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         const data = await response.json();
-        setLogs(data.logs);
-      } catch (error) {
-        console.error('Error fetching logs:', error);
+        console.log('Received logs data:', data);
+
+        if (Array.isArray(data)) {
+          setLogs(data);
+        } else {
+          console.error('Unexpected data format:', data);
+          setLogs([]);
+        }
+        
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching logs:', err);
+        setError(err instanceof Error ? err.message : 'Failed to fetch logs');
       } finally {
         setLoading(false);
       }
     };
 
-    // Initial fetch
     fetchLogs();
-
-    // Set up polling every 5 seconds
     const interval = setInterval(fetchLogs, 5000);
-
     return () => clearInterval(interval);
   }, []);
 

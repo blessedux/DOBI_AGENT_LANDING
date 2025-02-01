@@ -9,6 +9,10 @@ import ReactFlow, {
   useNodesState,
   useEdgesState,
   ReactFlowInstance,
+  ReactFlowProvider,
+  useReactFlow,
+  addEdge,
+  Connection,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import { motion, AnimatePresence, useAnimationControls } from "framer-motion";
@@ -26,9 +30,8 @@ interface WorkflowStep {
 }
 
 interface DeviceWorkflowProps {
-  isOpen: boolean;
+  selectedDevice: Charger;
   onClose: () => void;
-  selectedDevice: Charger | null;
 }
 
 const workflowData = {
@@ -128,69 +131,116 @@ const workflowData = {
   }
 };
 
-export default function DeviceWorkflow({ isOpen, onClose, selectedDevice }: DeviceWorkflowProps) {
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+// Custom nodes for device workflow
+const DeviceNode = ({ data }: { data: any }) => (
+  <div className="p-4 rounded-xl bg-white shadow-lg border border-gray-100">
+    <h3 className="font-semibold text-lg">{data.name}</h3>
+    <div className="text-sm text-gray-500">{data.model}</div>
+  </div>
+);
+
+const nodeTypes = {
+  deviceNode: DeviceNode,
+};
+
+function Flow({ selectedDevice, onClose }: DeviceWorkflowProps) {
+  const { setViewport } = useReactFlow();
+
+  React.useEffect(() => {
+    setViewport({ x: 0, y: 0, zoom: 1 });
+  }, [setViewport]);
+
+  const initialNodes = [
+    {
+      id: 'device-main',
+      type: 'deviceNode',
+      position: { x: window.innerWidth / 2 - 100, y: 100 },
+      data: selectedDevice,
+    },
+    // Add more nodes for device workflow
+  ];
+
+  const initialEdges = [
+    // Add edges for device workflow
+  ];
+
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+
+  return (
+    <div className="h-full relative">
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 z-50 px-4 py-2 bg-white rounded-lg shadow-md hover:bg-gray-50"
+      >
+        Close
+      </button>
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        nodeTypes={nodeTypes}
+        fitView
+        className="bg-white"
+      >
+        <Controls />
+        <Background color="#aaa" gap={16} />
+      </ReactFlow>
+    </div>
+  );
+}
+
+// Define node data type
+interface NodeData {
+  label: string;
+  status?: 'pending' | 'completed' | 'failed';
+}
+
+// Define custom node types
+type CustomNode = Node<NodeData>;
+
+export default function DeviceWorkflow({ 
+  selectedDevice, 
+  onClose 
+}: DeviceWorkflowProps) {
+  const [nodes, setNodes, onNodesChange] = useNodesState<NodeData>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
+  const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [progress, setProgress] = useState(0);
+
+  // Define initial nodes with proper typing
+  const initialNodes: CustomNode[] = [
+    {
+      id: '1',
+      type: 'input',
+      data: { label: 'Start' },
+      position: { x: 250, y: 0 },
+    },
+    // Add more nodes as needed
+  ];
+
+  // Define initial edges with proper typing
+  const initialEdges: Edge[] = [
+    // Add edges for device workflow
+    // Example:
+    // { id: 'e1-2', source: '1', target: '2', animated: true },
+  ];
 
   // Initialize nodes and edges
   useEffect(() => {
-    if (!isOpen) return;
+    setNodes(initialNodes);
+    setEdges(initialEdges);
+  }, [setNodes, setEdges]);
 
-    const steps = workflowData.workflow.steps;
-    const ySpacing = 300;
-    const leftOffset = 450;
-    const startY = 150;
-
-    const flowNodes: Node[] = steps.map((step, index) => ({
-      id: step.id,
-      type: 'custom',
-      position: { x: leftOffset, y: startY + (index * ySpacing) },
-      data: { 
-        ...step,
-        isActive: index === 0,
-        progress: index === 0 ? 0 : 0,
-      },
-    }));
-
-    // Create edges
-    const flowEdges: Edge[] = steps.reduce((acc: Edge[], step) => {
-      if (!step.next_step) return acc;
-
-      const nextSteps = Array.isArray(step.next_step) 
-        ? step.next_step 
-        : [step.next_step];
-
-      const edges = nextSteps.map((nextStep) => ({
-        id: `${step.id}-${nextStep}`,
-        source: step.id,
-        target: nextStep,
-        animated: true,
-        style: { stroke: '#FFFFFF', strokeWidth: 2 },
-      }));
-
-      return [...acc, ...edges];
-    }, []);
-
-    setNodes(flowNodes);
-    setEdges(flowEdges);
-
-    // Initial viewport positioning
-    if (reactFlowInstance) {
-      reactFlowInstance.setViewport({
-        x: -400,
-        y: 0,
-        zoom: 1
-      });
-    }
-  }, [isOpen, setNodes, setEdges, reactFlowInstance]);
+  // Handle adding new edges
+  const onConnect = (params: Connection) => {
+    setEdges((eds) => addEdge(params, eds));
+  };
 
   // Progress animation
   useEffect(() => {
-    if (!isOpen) return;
-
     const progressInterval = setInterval(() => {
       setProgress((prev) => {
         // Update progress over 6 seconds (6000ms)
@@ -202,12 +252,10 @@ export default function DeviceWorkflow({ isOpen, onClose, selectedDevice }: Devi
 
     // Clear interval when component unmounts or when card changes
     return () => clearInterval(progressInterval);
-  }, [activeStepIndex, isOpen]);
+  }, [activeStepIndex]);
 
   // Auto-sliding effect with 6-second intervals
   useEffect(() => {
-    if (!isOpen) return;
-
     const slideInterval = setTimeout(() => {
       setActiveStepIndex((prevIndex) => {
         const nextIndex = (prevIndex + 1) % workflowData.workflow.steps.length;
@@ -243,7 +291,7 @@ export default function DeviceWorkflow({ isOpen, onClose, selectedDevice }: Devi
     }, 6000); // Exactly 6 seconds
 
     return () => clearTimeout(slideInterval);
-  }, [isOpen, setNodes, reactFlowInstance, activeStepIndex]); // Added activeStepIndex dependency
+  }, [setNodes, reactFlowInstance, activeStepIndex]); // Added activeStepIndex dependency
 
   // Update the CustomNode component
   const CustomNode = ({ data }: { data: WorkflowStep & { isActive: boolean } }) => (
@@ -297,73 +345,29 @@ export default function DeviceWorkflow({ isOpen, onClose, selectedDevice }: Devi
   );
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
-          animate={{ opacity: 1, backdropFilter: "blur(8px)" }}
-          exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
-          className="fixed inset-0 z-[100] flex items-center bg-black/30"
-          onClick={onClose}
-        >
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
-            className="bg-gray-900/80 rounded-xl w-[1600px] h-[800px] p-6 ml-8 flex gap-6 relative"
-            onClick={(e) => e.stopPropagation()}
+    <div className="h-full relative">
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 z-50 px-4 py-2 bg-white rounded-lg shadow-md hover:bg-gray-50"
+      >
+        Close
+      </button>
+      <div className="w-full h-[700px] rounded-lg overflow-hidden">
+        <ReactFlowProvider>
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+            onInit={setReactFlowInstance}
+            fitView
           >
-            {/* Close Button */}
-            <button
-              onClick={onClose}
-              className="absolute top-4 left-4 z-50 p-2 rounded-full hover:bg-white/10 transition-colors"
-            >
-              <X className="w-6 h-6 text-white" />
-            </button>
-
-            {/* Left side - Battery Animation */}
-            <div className="w-[400px] h-full relative rounded-lg overflow-hidden bg-gray-800/50">
-              <iframe 
-                src="https://my.spline.design/batterycharger-6e007fa859514441e3cf848216c8a650/"
-                className="w-full h-full"
-                style={{
-                  border: 'none',
-                  borderRadius: '8px',
-                  pointerEvents: 'none',
-                }}
-              />
-            </div>
-
-            {/* Right side - Workflow */}
-            <div className="flex-1">
-              <h2 className="text-white text-xl mb-4">
-                Workflow for Device: {selectedDevice?.name || 'Unknown Device'}
-              </h2>
-              <div className="w-full h-[700px] rounded-lg overflow-hidden">
-                <ReactFlow
-                  nodes={nodes}
-                  edges={edges}
-                  onNodesChange={onNodesChange}
-                  onEdgesChange={onEdgesChange}
-                  nodeTypes={{ custom: CustomNode }}
-                  fitView={false}
-                  className="bg-transparent"
-                  defaultViewport={{ x: -400, y: 0, zoom: 1 }}
-                  minZoom={1}
-                  maxZoom={1}
-                  onInit={setReactFlowInstance}
-                  zoomOnScroll={false}
-                  zoomOnPinch={false}
-                  zoomOnDoubleClick={false}
-                >
-                  <Background color="#2D4EC8" gap={20} size={1} style={{ opacity: 0.1 }} />
-                  <Controls showZoom={false} className="text-white" />
-                </ReactFlow>
-              </div>
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+            <Controls />
+            <Background color="#aaa" gap={16} />
+          </ReactFlow>
+        </ReactFlowProvider>
+      </div>
+    </div>
   );
 } 

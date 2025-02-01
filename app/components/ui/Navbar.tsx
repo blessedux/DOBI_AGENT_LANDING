@@ -12,7 +12,12 @@ interface NavbarProps {
 
 export default function Navbar({ activeTab, setActiveTab, isSidebarOpen = true }: NavbarProps) {
   return (
-    <nav className="w-full bg-white shadow-sm text-gray-900 px-6 py-4 flex items-center">
+    <nav className={`
+      w-full bg-white shadow-sm text-gray-900 px-6 py-4 
+      flex items-center justify-between
+      transition-all duration-300 ease-in-out
+      ${isSidebarOpen ? 'pr-[336px]' : 'pr-[80px]'}
+    `}>
       {/* Left Section - Logo and Brand */}
       <div className="flex items-center space-x-3">
         <Link href="/" className="flex items-center space-x-2">
@@ -27,7 +32,7 @@ export default function Navbar({ activeTab, setActiveTab, isSidebarOpen = true }
       </div>
 
       {/* Center Section - Navigation Items */}
-      <div className="flex-1 flex items-center justify-center space-x-8">
+      <div className="flex items-center space-x-8">
         <button 
           onClick={() => setActiveTab("architecture")}
           className={`${
@@ -70,11 +75,7 @@ export default function Navbar({ activeTab, setActiveTab, isSidebarOpen = true }
       </div>
 
       {/* Right Section - Wiki and App */}
-      <div className={`
-        flex items-center space-x-6
-        transition-all duration-300 ease-in-out
-        ${isSidebarOpen ? 'mr-[336px]' : 'mr-[80px]'}
-      `}>
+      <div className="flex items-center space-x-6">
         <Link 
           href="https://dobprotocol.notion.site/wiki1"
           className="text-gray-600 hover:text-gray-900 transition-colors"

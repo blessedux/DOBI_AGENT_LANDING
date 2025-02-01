@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { Badge } from "./ui/Badge";
 import { ScrollArea } from "./ui/ScrollArea";
-import { ChevronRight, ChevronLeft, Zap } from "lucide-react"; 
-import DeviceWorkflow from "./DeviceWorkflow";
+import { ChevronRight, ChevronLeft } from "lucide-react"; 
 import { Charger } from "./DobiChart";
+import Image from 'next/image';
 
 const chargers = [
   {
@@ -121,95 +121,95 @@ const AgentSidebar: React.FC<AgentSidebarProps> = ({
   isSidebarOpen,
   setIsSidebarOpen
 }) => {
-  const [isWorkflowOpen, setIsWorkflowOpen] = useState(false);
-
-  const handleDeviceClick = (charger: Charger) => {
-    setSelectedDevice(charger);
-    setIsWorkflowOpen(true);
-  };
-
   return (
-    <>
-      <div 
-        className={`fixed right-0 top-0 h-full bg-white/80 backdrop-blur-md shadow-lg z-[60] 
-          transition-all duration-300 border-l border-gray-200
-          ${isSidebarOpen ? "w-80" : "w-16"}`}
-      >
-        <div className="flex items-center justify-between p-4 border-b border-gray-100">
-          <button 
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
-            className="p-2 rounded-full hover:bg-gray-100/80 transition-all"
-          >
-            {isSidebarOpen ? <ChevronRight className="text-gray-600" /> : <ChevronLeft className="text-gray-600" />}
-          </button>
-
-          {isSidebarOpen && (
-            <div className="flex items-center gap-2">
-              <h2 className="font-semibold text-xl text-[#2D4EC8]">Devices</h2>
-              <Badge variant="outline" className="bg-[#B5C8F9]/20">
-                {chargers.length}
-              </Badge>
-            </div>
-          )}
-        </div>
+    <div className={`fixed right-0 top-[64px] bottom-0 bg-white/90 backdrop-blur-md shadow-lg z-[60] 
+      transition-all duration-300 border-l border-gray-100 flex flex-col
+      ${isSidebarOpen ? "w-80" : "w-16"}`}
+    >
+      <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-white/90 backdrop-blur-md">
+        <button 
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
+          className="p-2 rounded-full hover:bg-gray-100/80 transition-all"
+        >
+          {isSidebarOpen ? <ChevronRight className="text-gray-600" /> : <ChevronLeft className="text-gray-600" />}
+        </button>
 
         {isSidebarOpen && (
-          <ScrollArea className="h-[calc(100vh-5rem)] px-4">
-            <div className="space-y-3 py-4">
-              {chargers.map((charger) => (
+          <div className="flex items-center gap-2">
+            <h2 className="font-semibold text-lg">Devices</h2>
+            <Badge variant="outline" className="bg-[#E8EDFF] text-[#2D4EC8]">
+              Actives: {chargers.filter(c => c.status === 'active').length}
+            </Badge>
+          </div>
+        )}
+      </div>
+
+      {isSidebarOpen && (
+        <div className="flex-1 overflow-hidden">
+          <ScrollArea className="h-full">
+            <div className="space-y-3 p-4">
+              {chargers.map((charger, index) => (
                 <div
                   key={charger.id_charger}
-                  className={`p-4 rounded-xl border cursor-pointer transition-all
+                  className={`p-4 rounded-xl border transition-all hover:shadow-md cursor-pointer
                     ${selectedDevice?.id_charger === charger.id_charger
-                      ? "bg-[#B5C8F9]/20 border-[#2D4EC8]"
+                      ? "bg-[#E8EDFF] border-[#2D4EC8]"
                       : "hover:bg-gray-50 border-gray-100"
                     }`}
-                  onClick={() => handleDeviceClick(charger)}
+                  onClick={() => {
+                    setSelectedDevice(charger);
+                  }}
                 >
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 rounded-full bg-[#B5C8F9]/20 flex items-center justify-center">
-                      <Zap className="w-5 h-5 text-[#2D4EC8]" />
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <div className="w-12 h-12 rounded-full bg-[#E8EDFF] flex items-center justify-center overflow-hidden">
+                        <Image 
+                          src="/icons/Zap_Icon.png"
+                          alt="Zap Icon"
+                          width={48}
+                          height={48}
+                          className="w-[120%] h-[120%] object-cover"
+                          style={{ transform: 'scale(1.2)' }}
+                        />
+                      </div>
+                      <Badge 
+                        className={`absolute -top-1 -right-1 px-2 py-0.5 text-[10px] ${
+                          charger.status === 'active' 
+                            ? 'bg-green-400 text-white'
+                            : 'bg-blue-400 text-white'
+                        }`}
+                      >
+                        #{index + 1}
+                      </Badge>
                     </div>
-                    <div>
-                      <h3 className="font-medium text-[#2D4EC8]">{charger.name}</h3>
-                      <p className="text-xs text-gray-500">{charger.model}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-2 mt-3">
-                    <div className="text-xs">
-                      <p className="text-gray-500">Transactions</p>
-                      <p className="font-medium">{charger.transactions}</p>
-                    </div>
-                    <div className="text-xs">
-                      <p className="text-gray-500">Balance</p>
-                      <p className="font-medium">${charger.balance_total.toLocaleString()}</p>
+                    
+                    <div className="flex-1">
+                      <h3 className="font-medium text-gray-900">{charger.name}</h3>
+                      <div className="flex items-center gap-1 text-xs text-gray-500">
+                        <span>{charger.model}</span>
+                        <span>•</span>
+                        <span>{charger.location.address}</span>
+                      </div>
                     </div>
                   </div>
 
-                  <Badge 
-                    variant={charger.status === "active" ? "default" : "secondary"}
-                    className={`mt-3 ${
-                      charger.status === "active" 
-                        ? "bg-green-100 text-green-700" 
-                        : "bg-blue-100 text-blue-700"
-                    }`}
-                  >
-                    {charger.status}
-                  </Badge>
+                  <div className="grid grid-cols-2 gap-4 mt-4">
+                    <div>
+                      <p className="text-xs text-[#2D4EC8] font-medium">Transactions</p>
+                      <p className="text-lg font-semibold">{charger.transactions}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-[#2D4EC8] font-medium">Balance</p>
+                      <p className="text-lg font-semibold">${charger.balance_total.toLocaleString()}</p>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
           </ScrollArea>
-        )}
-      </div>
-
-      <DeviceWorkflow
-        isOpen={isWorkflowOpen}
-        onClose={() => setIsWorkflowOpen(false)}
-        selectedDevice={selectedDevice}
-      />
-    </>
+        </div>
+      )}
+    </div>
   );
 };
 
