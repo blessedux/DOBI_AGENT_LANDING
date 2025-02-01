@@ -6,7 +6,7 @@ export const LogEntrySchema = z.object({
   txHash: z.string().startsWith('0x'),
   timestamp: z.string().datetime(),
   status: z.enum(['pending', 'completed', 'failed']),
-  network: z.string().default('mantle-testnet')
+  network: z.string()
 });
 
 export type LogEntryType = z.infer<typeof LogEntrySchema>; 

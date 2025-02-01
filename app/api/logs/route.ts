@@ -1,17 +1,13 @@
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
-import { cors } from '../../lib/cors';
 import { LogEntrySchema } from '../../lib/validations';
+import type { z } from 'zod';
 
-// Keep only what we need
-let logs: Array<{
-  sender: string;
-  amount: string;
-  txHash: string;
-  timestamp: string;
-  status: 'pending' | 'completed' | 'failed';
-  network: string;
-}> = [];
+// Define the type for our logs
+type LogEntry = z.infer<typeof LogEntrySchema>;
+
+// In-memory storage for logs (replace with database in production)
+let logs: LogEntry[] = [];
 
 /**
  * POST /api/logs
@@ -33,15 +29,22 @@ let logs: Array<{
  */
 export async function POST(request: Request) {
   try {
-    // Handle CORS
+    // Handle CORS preflight
     if (request.method === 'OPTIONS') {
-      return new NextResponse(null, { status: 204, headers: cors });
+      return new NextResponse(null, { 
+        status: 204,
+        headers: {
+          'Access-Control-Allow-Origin': process.env.ALLOWED_ORIGIN || '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, x-api-key',
+        }
+      });
     }
 
+    // Validate API key
     const headersList = headers();
     const apiKey = headersList.get('x-api-key');
 
-    // Validate API key
     if (!apiKey || apiKey !== process.env.API_KEY) {
       return NextResponse.json(
         { error: 'Unauthorized - Invalid API key' },
@@ -49,10 +52,10 @@ export async function POST(request: Request) {
       );
     }
 
+    // Parse and validate request body
     const body = await request.json();
-    
-    // Validate request body with Zod
     const validationResult = LogEntrySchema.safeParse(body);
+
     if (!validationResult.success) {
       return NextResponse.json(
         { error: 'Invalid request body', details: validationResult.error },
@@ -60,7 +63,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Store in memory
+    // Store the log
     logs.push(validationResult.data);
 
     return NextResponse.json(

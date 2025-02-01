@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { Badge } from "./ui/Badge";
 import { ScrollArea } from "./ui/ScrollArea";
-import { ChevronRight, ChevronLeft } from "lucide-react"; 
+import { ChevronRight, ChevronLeft, Zap } from "lucide-react"; 
 import DeviceWorkflow from "./DeviceWorkflow";
 import { Charger } from "./DobiChart";
 
@@ -131,47 +131,72 @@ const AgentSidebar: React.FC<AgentSidebarProps> = ({
   return (
     <>
       <div 
-        className={`fixed right-0 top-0 h-full bg-white shadow-lg z-[60] transition-all duration-300 border-l
+        className={`fixed right-0 top-0 h-full bg-white/80 backdrop-blur-md shadow-lg z-[60] 
+          transition-all duration-300 border-l border-gray-200
           ${isSidebarOpen ? "w-80" : "w-16"}`}
       >
-        <div className="flex items-center justify-between p-4">
+        <div className="flex items-center justify-between p-4 border-b border-gray-100">
           <button 
             onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
-            className="p-2 rounded-md hover:bg-gray-200 transition-all"
+            className="p-2 rounded-full hover:bg-gray-100/80 transition-all"
           >
-            {isSidebarOpen ? <ChevronRight size={24} /> : <ChevronLeft size={24} />}
+            {isSidebarOpen ? <ChevronRight className="text-gray-600" /> : <ChevronLeft className="text-gray-600" />}
           </button>
 
           {isSidebarOpen && (
-            <h2 className="font-semibold text-xl text-[#2D4EC8]">Active Devices</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="font-semibold text-xl text-[#2D4EC8]">Devices</h2>
+              <Badge variant="outline" className="bg-[#B5C8F9]/20">
+                {chargers.length}
+              </Badge>
+            </div>
           )}
-
-          {isSidebarOpen && <Badge variant="outline">{chargers.length}</Badge>}
         </div>
 
         {isSidebarOpen && (
-          <ScrollArea className="h-[calc(100vh-10rem)]">
-            <div className="space-y-4">
+          <ScrollArea className="h-[calc(100vh-5rem)] px-4">
+            <div className="space-y-3 py-4">
               {chargers.map((charger) => (
                 <div
                   key={charger.id_charger}
-                  className={`p-4 rounded-lg border cursor-pointer transition-all ${
-                    selectedDevice?.id_charger === charger.id_charger
-                      ? "bg-[#B5C8F9]"
-                      : "bg-card hover:bg-gray-100"
-                  }`}
+                  className={`p-4 rounded-xl border cursor-pointer transition-all
+                    ${selectedDevice?.id_charger === charger.id_charger
+                      ? "bg-[#B5C8F9]/20 border-[#2D4EC8]"
+                      : "hover:bg-gray-50 border-gray-100"
+                    }`}
                   onClick={() => handleDeviceClick(charger)}
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-medium text-[#2D4EC8]">{charger.name}</h3>
-                    <Badge variant={charger.status === "active" ? "default" : "destructive"}>
-                      {charger.status}
-                    </Badge>
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-10 h-10 rounded-full bg-[#B5C8F9]/20 flex items-center justify-center">
+                      <Zap className="w-5 h-5 text-[#2D4EC8]" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-[#2D4EC8]">{charger.name}</h3>
+                      <p className="text-xs text-gray-500">{charger.model}</p>
+                    </div>
                   </div>
-                  <p className="text-xs text-muted-foreground">Model: {charger.model}</p>
-                  <p className="text-xs text-muted-foreground">Location: {charger.location.address}</p>
-                  <p className="text-xs text-muted-foreground">Transactions: {charger.transactions}</p>
-                  <p className="text-xs text-muted-foreground">Balance: ${charger.balance_total.toFixed(2)}</p>
+                  
+                  <div className="grid grid-cols-2 gap-2 mt-3">
+                    <div className="text-xs">
+                      <p className="text-gray-500">Transactions</p>
+                      <p className="font-medium">{charger.transactions}</p>
+                    </div>
+                    <div className="text-xs">
+                      <p className="text-gray-500">Balance</p>
+                      <p className="font-medium">${charger.balance_total.toLocaleString()}</p>
+                    </div>
+                  </div>
+
+                  <Badge 
+                    variant={charger.status === "active" ? "default" : "secondary"}
+                    className={`mt-3 ${
+                      charger.status === "active" 
+                        ? "bg-green-100 text-green-700" 
+                        : "bg-blue-100 text-blue-700"
+                    }`}
+                  >
+                    {charger.status}
+                  </Badge>
                 </div>
               ))}
             </div>

@@ -1,55 +1,48 @@
 "use client";
 
-import React, { useEffect, useCallback } from "react";
-import {
-  ReactFlow,
-  Background,
-  Controls,
-  MiniMap,
-  useNodesState,
-  useEdgesState,
-  Node,
-  Edge,
-  EdgeTypes,
-  MarkerType,
-  ReactFlowInstance,
-} from "reactflow";
-import "reactflow/dist/style.css";
-import { useSpring, animated } from "@react-spring/web";
-import CentralNode from "./ui/CentralNode";
-import GlassmorphismWindow from "./ui/GlassmorphismWindow";
+import React from 'react';
+import { useSpring, animated } from '@react-spring/web';
+import type { Charger } from './DobiChart';  // Import the Charger type
 
-// Charger data grouped by company
-const chargerGroups = {
-  "Ehive SPA": [
-    { id: "CHG-001", name: "Fast Charger A1", transactions: 1200, balance: 10000.25 },
-    { id: "CHG-002", name: "Eco Charger B3", transactions: 450, balance: 4500.00 },
-    { id: "CHG-003", name: "Urban Charger C1", transactions: 320, balance: 3000.00 },
-    { id: "CHG-004", name: "Eco Charger B4", transactions: 700, balance: 7000.00 },
-    { id: "CHG-005", name: "Highway Charger D1", transactions: 950, balance: 10000.00 },
-  ],
-  "GreenTech SPA": [
-    { id: "CHG-006", name: "Green Charger G1", transactions: 600, balance: 6000.00 },
-    { id: "CHG-007", name: "Green Charger G2", transactions: 800, balance: 9000.00 },
-  ],
-};
+// Define chargers data
+const chargers: Charger[] = [
+  {
+    id_charger: "CHG-001",
+    name: "Fast Charger A1",
+    model: "ABB Fast",
+    image: "",
+    location: { latitude: -33.4489, longitude: -70.6693, address: "Santiago, Chile" },
+    company_owner: "Ehive SPA",
+    creation_date: "2023-12-01",
+    status: "active",
+    transactions: 1200,
+    cost_generated: 5000.75,
+    income_generated: 15000.5,
+    balance_total: 10000.25,
+  },
+  {
+    id_charger: "CHG-002",
+    name: "Eco Charger B3",
+    model: "ABB Slow",
+    image: "",
+    location: { latitude: -33.4567, longitude: -70.6723, address: "Providencia, Chile" },
+    company_owner: "Ehive SPA",
+    creation_date: "2024-01-15",
+    status: "maintenance",
+    transactions: 450,
+    cost_generated: 2000.0,
+    income_generated: 6500.0,
+    balance_total: 4500.0,
+  },
+  // ... add other chargers
+];
 
-const nodeTypes = {
-  centralNode: CentralNode,
-};
-
-// Add interface for props
 interface BubbleMapProps {
   selectedChargerId?: string;
   activeTab: "architecture" | "devices";
 }
 
 export default function BubbleMap({ selectedChargerId, activeTab }: BubbleMapProps) {
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const [loading, setLoading] = React.useState(true);
-  const [reactFlowInstance, setReactFlowInstance] = React.useState<ReactFlowInstance | null>(null);
-
   const styles = useSpring({
     opacity: 1,
     transform: "scale(1)",
@@ -57,115 +50,38 @@ export default function BubbleMap({ selectedChargerId, activeTab }: BubbleMapPro
     config: { tension: 180, friction: 20 },
   });
 
-  useEffect(() => {
-    console.log("✅ BubbleMap.tsx is rendering!");
-
-    // Calculate viewport center
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-    const centerX = 0; // This will be adjusted by the viewport positioning
-    const centerY = 0; // This will be adjusted by the viewport positioning
-
-    // Central DOBI Node - Remove style overrides that might conflict
-    const centralNode: Node = {
-      id: "central",
-      type: "centralNode",
-      data: { label: "DOBI Agent" },
-      position: { x: 0, y: 0 },
-      
-    };
-
-    // Adjust charger positions relative to center
-    let allNodes: Node[] = [centralNode];
-    let allEdges: Edge[] = [];
-
-    Object.entries(chargerGroups).forEach(([company, chargers], groupIndex) => {
-      const isLeftGroup = groupIndex === 0;
-      const baseX = isLeftGroup ? -500 : 500; // Positions relative to center
-      
-      chargers.forEach((charger, index) => {
-        const chargerNode: Node = {
-          id: charger.id,
-          data: { 
-            label: charger.name,
-            transactions: charger.transactions,
-            balance: charger.balance,
-            company: company,
-          },
-          position: {
-            x: baseX + (isLeftGroup ? -100 : 100),
-            y: (index * 120) - (chargers.length * 60),
-          },
-          style: {
-            width: 180,
-            padding: "15px",
-            backgroundColor: isLeftGroup ? "#28A745" : "#2D4EC8",
-            color: "white",
-            borderRadius: "12px",
-            textAlign: "center",
-            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-          },
-        };
-        allNodes.push(chargerNode);
-
-        allEdges.push({
-          id: `edge-${charger.id}`,
-          source: "central",
-          target: charger.id,
-          type: "default",
-          animated: true,
-          style: {
-            stroke: "#FFFFFF",
-            strokeWidth: 3,
-          },
-        });
-      });
-    });
-
-    setNodes(allNodes);
-    setEdges(allEdges);
-
-    // Center the viewport on the central node
-    if (reactFlowInstance) {
-      reactFlowInstance.setViewport({
-        x: viewportWidth / 2,
-        y: viewportHeight / 2,
-        zoom: 0.75
-      });
-    }
-
-    setLoading(false);
-  }, [setNodes, setEdges, reactFlowInstance]);
-
-  const handleNodesChange = useCallback(
-    (changes: any) => {
-      onNodesChange(changes);
-    },
-    [onNodesChange]
-  );
-
-  if (loading) return <div>Loading BubbleMap...</div>;
-
   return (
     <div className="relative w-full h-full">
-      <GlassmorphismWindow activeTab={activeTab} />
-      <animated.div style={styles} className="w-full h-full relative">
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={handleNodesChange}
-          onEdgesChange={onEdgesChange}
-          fitView={false}
-          className="bg-transparent"
-          defaultViewport={{ x: 0, y: 0, zoom: 0.75 }}
-          minZoom={0.5}
-          maxZoom={1.5}
-          onInit={setReactFlowInstance}
-          nodeTypes={nodeTypes}
-        >
-          <Background color="#2D4EC8" gap={20} size={1} style={{ opacity: 0.1 }} />
-          <Controls className="text-white" />
-        </ReactFlow>
+      <animated.div style={styles} className="w-full h-full flex items-center justify-center">
+        <div className="relative w-[600px] h-[600px]">
+          {/* Central DOBI Node */}
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-[#2D4EC8] rounded-full flex items-center justify-center text-white font-bold shadow-lg">
+            DOBI
+          </div>
+          
+          {/* Surrounding Nodes */}
+          {chargers.map((charger, index) => {
+            const angle = (index * (360 / chargers.length)) * (Math.PI / 180);
+            const radius = 200; // Distance from center
+            const x = Math.cos(angle) * radius;
+            const y = Math.sin(angle) * radius;
+            
+            return (
+              <div
+                key={charger.id_charger}
+                className={`absolute w-16 h-16 rounded-full flex items-center justify-center text-white font-medium transition-all duration-300 hover:scale-110 shadow-lg cursor-pointer
+                  ${charger.status === 'active' ? 'bg-green-400' : 'bg-blue-400'}
+                  ${selectedChargerId === charger.id_charger ? 'ring-4 ring-[#2D4EC8]' : ''}`}
+                style={{
+                  left: `calc(50% + ${x}px - 2rem)`,
+                  top: `calc(50% + ${y}px - 2rem)`,
+                }}
+              >
+                {charger.name.split(' ').pop()}
+              </div>
+            );
+          })}
+        </div>
       </animated.div>
     </div>
   );

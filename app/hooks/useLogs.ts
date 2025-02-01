@@ -12,12 +12,19 @@ export function useLogs() {
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const response = await fetch('/api/logs');
+        const response = await fetch('/api/logs', {
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': process.env.NEXT_PUBLIC_API_KEY || ''
+          },
+          credentials: 'include' // If you need cookies
+        });
+        
         if (!response.ok) throw new Error('Failed to fetch logs');
         const data = await response.json();
         setLogs(data.logs);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch logs');
+      } catch (error) {
+        console.error('Error fetching logs:', error);
       } finally {
         setLoading(false);
       }
