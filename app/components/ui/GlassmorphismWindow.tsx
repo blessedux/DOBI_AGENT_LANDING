@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 
 interface GlassmorphismWindowProps {
   activeTab: "architecture" | "devices";
@@ -25,17 +25,15 @@ const GlassmorphismWindow: React.FC<GlassmorphismWindowProps> = ({ activeTab }) 
   const [currentText, setCurrentText] = useState("");
   const [currentBulletIndex, setCurrentBulletIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
-  const typingSpeed = 30; // Speed for typing
-  const deletingSpeed = 15; // Speed for deleting
-  const pauseDuration = 4000; // 4 seconds pause when text is complete
+  const [width, setWidth] = useState(320); // Smaller default width
+  const isDragging = useRef(false);
+  const startX = useRef(0);
+  const startWidth = useRef(0);
+  const typingSpeed = 30;
+  const deletingSpeed = 15;
+  const pauseDuration = 4000;
 
-  // Only run the typing effect when the architecture tab is active
   useEffect(() => {
-    if (activeTab !== "architecture") {
-      setCurrentText("");
-      return;
-    }
-
     let timeout: NodeJS.Timeout;
 
     if (isDeleting) {
@@ -44,7 +42,7 @@ const GlassmorphismWindow: React.FC<GlassmorphismWindowProps> = ({ activeTab }) 
         setCurrentBulletIndex((prev) => (prev + 1) % bulletPoints.length);
       } else {
         timeout = setTimeout(() => {
-          setCurrentText(prev => prev.slice(0, -1));
+          setCurrentText("");  // Clear all text at once
         }, deletingSpeed);
       }
     } else {
@@ -61,18 +59,60 @@ const GlassmorphismWindow: React.FC<GlassmorphismWindowProps> = ({ activeTab }) 
     }
 
     return () => clearTimeout(timeout);
-  }, [currentText, currentBulletIndex, isDeleting, activeTab]);
+  }, [currentText, currentBulletIndex, isDeleting]);
 
-  // Don't render anything if not on architecture tab
-  if (activeTab !== "architecture") return null;
+  // Handle resize functionality
+  const startResizing = (e: React.MouseEvent) => {
+    isDragging.current = true;
+    startX.current = e.pageX;
+    startWidth.current = width;
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', stopResizing);
+  };
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isDragging.current) return;
+    const delta = e.pageX - startX.current;
+    const newWidth = Math.max(280, Math.min(600, startWidth.current + delta));
+    setWidth(newWidth);
+  };
+
+  const stopResizing = () => {
+    isDragging.current = false;
+    document.removeEventListener('mousemove', handleMouseMove);
+    document.removeEventListener('mouseup', stopResizing);
+  };
 
   return (
-    <div className="absolute top-20 left-4 z-30 p-6 rounded-lg backdrop-blur-md bg-gray-800/50 border border-gray-300/50 shadow-lg w-[300px]">
-      <h2 className="text-white text-lg font-bold mb-4">DOBI Agent Features</h2>
-      <p className="text-gray-200 leading-relaxed">
-        {currentBulletIndex + 1}. {currentText}
-        <span className="animate-pulse">|</span>
-      </p>
+    <div 
+      className={`absolute top-20 left-4 z-30 rounded-lg backdrop-blur-md bg-gray-800/50 
+        border border-gray-300/50 shadow-lg ${activeTab === "devices" ? "hidden" : ""}`}
+      style={{ width: `${width}px` }}
+    >
+      {/* Terminal Header */}
+      <div className="flex items-center justify-between px-4 py-2 border-b border-gray-600/50">
+        <div className="text-gray-400 text-sm font-mono">DOBI Agent v1.0 Features</div>
+        <div 
+          className="w-4 h-full cursor-ew-resize"
+          onMouseDown={startResizing}
+        >
+          <div className="w-1 h-4 bg-gray-500/50 rounded-full mx-auto mt-1" />
+        </div>
+      </div>
+
+      {/* Terminal Content - Fixed Height */}
+      <div className="p-4 h-[300px] overflow-y-auto custom-scrollbar">
+        <div className="font-mono text-sm">
+          <div className="text-gray-200 leading-relaxed">
+            <span className="text-blue-400">dobi@agent</span>
+            <span className="text-gray-400">:</span>
+            <span className="text-green-400">~</span>
+            <span className="text-gray-400">$ </span>
+            <span>{currentBulletIndex + 1}. {currentText}</span>
+            <span className="inline-block w-2 h-4 bg-gray-200 ml-1 animate-pulse">▋</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

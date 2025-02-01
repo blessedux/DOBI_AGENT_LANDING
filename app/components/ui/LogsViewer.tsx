@@ -70,7 +70,7 @@ const LogEntry = ({ log }: { log: TransactionLog }) => {
     <div className="mb-3 hover:bg-white/5 p-2 rounded border border-gray-800/20">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <span className="text-gray-400">
+          <span className="text-white-400">
             {formatTimestamp(log.timestamp)}
           </span>
           <span className={`${getStatusColor(log.status)}`}>
@@ -79,12 +79,12 @@ const LogEntry = ({ log }: { log: TransactionLog }) => {
           <span className="text-blue-400">
             {log.network || 'unknown-network'}
           </span>
-          <span className="text-gray-200">
+          <span className="text-white-200">
             {log.amount || '0'} ETH from {log.sender ? 
               `${log.sender.slice(0, 6)}...${log.sender.slice(-4)}` : 
               'unknown-sender'}
           </span>
-          <span className="text-gray-500">
+          <span className="text-white-500">
             tx: {log.txHash ? 
               `${log.txHash.slice(0, 8)}...${log.txHash.slice(-6)}` : 
               'unknown-hash'}
