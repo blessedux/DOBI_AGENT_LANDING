@@ -3,9 +3,9 @@
 import React, { useState } from "react";
 import Navbar from "./components/ui/Navbar";
 import AgentSidebar from "./components/AgentSidebar";
-import Dashboard from "./components/Dashboard";
+import Dashboard from "@/components/Dashboard";
 import BackgroundScene from "./components/BackgroundScene";
-import type { Charger } from "./components/DobiChart";
+import type { Charger } from "@/components/DobiChart";
 import LogsViewer from './components/ui/LogsViewer';
 import 'reactflow/dist/style.css';
 
@@ -36,6 +36,7 @@ export default function Home() {
           <Dashboard 
             activeTab={activeTab}
             selectedDevice={selectedDevice}
+            setSelectedDevice={setSelectedDevice}
           />
         </main>
 

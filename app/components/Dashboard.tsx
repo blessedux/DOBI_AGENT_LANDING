@@ -8,10 +8,15 @@ import AgentSidebar from './AgentSidebar';
 
 interface DashboardProps {
   activeTab: "architecture" | "devices";
+  selectedDevice: Charger | null;
+  setSelectedDevice: (device: Charger | null) => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ activeTab }) => {
-  const [selectedDevice, setSelectedDevice] = useState<Charger | null>(null);
+const Dashboard: React.FC<DashboardProps> = ({ 
+  activeTab, 
+  selectedDevice,
+  setSelectedDevice 
+}) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
 
   return (
