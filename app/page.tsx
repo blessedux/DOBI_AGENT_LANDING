@@ -20,6 +20,9 @@ export default function Home() {
   // Maintain workflow state
   const [isWorkflowOpen, setIsWorkflowOpen] = useState(false);
 
+  // Maintain sidebar state
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
   // Handle workflow close
   const handleCloseWorkflow = () => {
     setIsWorkflowOpen(false);
@@ -32,13 +35,19 @@ export default function Home() {
         <BackgroundScene />
 
         {/* Navbar */}
-        <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
+        <Navbar 
+          activeTab={activeTab} 
+          setActiveTab={setActiveTab} 
+          isSidebarOpen={isSidebarOpen}
+        />
 
         <main className="flex-1 flex relative z-10">
           {/* AgentSidebar */}
           <AgentSidebar 
             setSelectedDevice={setSelectedDevice} 
             selectedDevice={selectedDevice} 
+            isSidebarOpen={isSidebarOpen}
+            setIsSidebarOpen={setIsSidebarOpen}
           />
           
           {/* Pass activeTab to DobiChart */}
