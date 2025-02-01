@@ -111,10 +111,16 @@ const chargers = [
 interface AgentSidebarProps {
   setSelectedDevice: (device: Charger | null) => void;
   selectedDevice: Charger | null;
+  isSidebarOpen: boolean;
+  setIsSidebarOpen: (open: boolean) => void;
 }
 
-const AgentSidebar: React.FC<AgentSidebarProps> = ({ setSelectedDevice, selectedDevice }) => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true); 
+const AgentSidebar: React.FC<AgentSidebarProps> = ({ 
+  setSelectedDevice, 
+  selectedDevice,
+  isSidebarOpen,
+  setIsSidebarOpen
+}) => {
   const [isWorkflowOpen, setIsWorkflowOpen] = useState(false);
 
   const handleDeviceClick = (charger: Charger) => {
@@ -129,7 +135,6 @@ const AgentSidebar: React.FC<AgentSidebarProps> = ({ setSelectedDevice, selected
           ${isSidebarOpen ? "w-80" : "w-16"}`}
       >
         <div className="flex items-center justify-between p-4">
-          {/* Toggle Button (kept visible) */}
           <button 
             onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
             className="p-2 rounded-md hover:bg-gray-200 transition-all"
@@ -137,16 +142,13 @@ const AgentSidebar: React.FC<AgentSidebarProps> = ({ setSelectedDevice, selected
             {isSidebarOpen ? <ChevronRight size={24} /> : <ChevronLeft size={24} />}
           </button>
 
-          {/* Sidebar Title (hide if collapsed) */}
           {isSidebarOpen && (
             <h2 className="font-semibold text-xl text-[#2D4EC8]">Active Devices</h2>
           )}
 
-          {/* Badge Count */}
           {isSidebarOpen && <Badge variant="outline">{chargers.length}</Badge>}
         </div>
 
-        {/* Scroll Area - Hidden when collapsed */}
         {isSidebarOpen && (
           <ScrollArea className="h-[calc(100vh-10rem)]">
             <div className="space-y-4">
@@ -177,7 +179,6 @@ const AgentSidebar: React.FC<AgentSidebarProps> = ({ setSelectedDevice, selected
         )}
       </div>
 
-      {/* Workflow Modal */}
       <DeviceWorkflow
         isOpen={isWorkflowOpen}
         onClose={() => setIsWorkflowOpen(false)}

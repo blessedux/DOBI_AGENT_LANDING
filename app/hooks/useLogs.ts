@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
-import { LogEntry } from '../api/logs/route';
+import { LogEntrySchema } from '../lib/validations';
+import type { z } from 'zod';
+
+type LogEntry = z.infer<typeof LogEntrySchema>;
 
 export function useLogs() {
   const [logs, setLogs] = useState<LogEntry[]>([]);

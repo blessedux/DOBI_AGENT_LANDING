@@ -15,7 +15,6 @@ dist/
 generateApiKey.ts
 generateApiKey.js
 *.pem
-config/secrets.json
 
 # Debug logs
 npm-debug.log*

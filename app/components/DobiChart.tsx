@@ -158,7 +158,7 @@ export interface Charger {
   balance_total: number;
 }
 
-const DobiChart: React.FC<DobiChartProps> = ({ activeTab }) => {
+export default function DobiChart({ activeTab }: DobiChartProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState<CustomNodeData>(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   
@@ -177,7 +177,7 @@ const DobiChart: React.FC<DobiChartProps> = ({ activeTab }) => {
   return (
     <div className="flex-1 relative">
       <div className="relative w-full h-screen overflow-hidden touch-none">
-        <GlassmorphismWindow />
+        <GlassmorphismWindow activeTab={activeTab} />
         
         {transitions((styles, tab) => (
           <animated.div
@@ -217,6 +217,4 @@ const DobiChart: React.FC<DobiChartProps> = ({ activeTab }) => {
       </div>
     </div>
   );
-};
-
-export default DobiChart;
+}
