@@ -132,7 +132,7 @@ const CustomNode = ({ data }: { data: CustomNodeData }) => {
 };
 
 interface DobiChartProps {
-  activeTab: string;
+  activeTab: "architecture" | "devices";
 }
 
 const nodeTypes: NodeTypes = {
@@ -158,7 +158,7 @@ export interface Charger {
   balance_total: number;
 }
 
-export default function DobiChart({ activeTab }: DobiChartProps) {
+const DobiChart: React.FC<DobiChartProps> = ({ activeTab }) => {
   const [nodes, setNodes, onNodesChange] = useNodesState<CustomNodeData>(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   
@@ -210,11 +210,13 @@ export default function DobiChart({ activeTab }: DobiChartProps) {
                 <Controls />
               </ReactFlow>
             ) : (
-              <BubbleMap />
+              <BubbleMap activeTab={activeTab} />
             )}
           </animated.div>
         ))}
       </div>
     </div>
   );
-}
+};
+
+export default DobiChart;

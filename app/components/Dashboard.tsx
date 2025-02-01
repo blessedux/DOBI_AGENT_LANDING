@@ -7,11 +7,17 @@ import DobiChart, { Charger } from "./DobiChart";
 import MonitorFlowChart from "./MonitorFlowChart";
 import BackgroundScene from "./BackgroundScene"; // Import the BackgroundScene component
 
-interface DashboardProps {}
+interface DashboardProps {
+  activeTab: "architecture" | "devices";
+  selectedDevice?: {
+    id_charger: string;
+    // ... other device properties
+  };
+}
 
-export default function Dashboard(props: DashboardProps) {
-  const [activeTab, setActiveTab] = useState<"architecture" | "devices">("architecture");
-  const [selectedDevice, setSelectedDevice] = useState<Charger | null>(null);
+export default function Dashboard({ activeTab, selectedDevice }: DashboardProps) {
+  const [activeTabState, setActiveTabState] = useState<"architecture" | "devices">("architecture");
+  const [selectedDeviceState, setSelectedDeviceState] = useState<Charger | null>(null);
 
   const handleSelectCharger = (chargerId: string) => {
     const charger: Charger = {
@@ -28,8 +34,8 @@ export default function Dashboard(props: DashboardProps) {
       income_generated: 0,
       balance_total: 0,
     };
-    setSelectedDevice(charger);
-    setActiveTab("devices"); // Optionally switch to devices tab upon selection
+    setSelectedDeviceState(charger);
+    setActiveTabState("devices"); // Optionally switch to devices tab upon selection
   };
 
   return (
@@ -40,8 +46,8 @@ export default function Dashboard(props: DashboardProps) {
       <div className="flex h-full">
         {/* Agent Sidebar */}
         <AgentSidebar
-          setSelectedDevice={setSelectedDevice}
-          selectedDevice={selectedDevice}
+          setSelectedDevice={setSelectedDeviceState}
+          selectedDevice={selectedDeviceState}
         />
 
         {/* Main Content Area */}
@@ -49,17 +55,17 @@ export default function Dashboard(props: DashboardProps) {
           {/* Tab Navigation */}
           <div className="flex justify-center space-x-4 p-4 bg-gray-900 text-white">
             <button
-              onClick={() => setActiveTab("architecture")}
+              onClick={() => setActiveTabState("architecture")}
               className={`px-4 py-2 rounded ${
-                activeTab === "architecture" ? "bg-blue-600" : "bg-gray-700"
+                activeTabState === "architecture" ? "bg-blue-600" : "bg-gray-700"
               }`}
             >
               Architecture
             </button>
             <button
-              onClick={() => setActiveTab("devices")}
+              onClick={() => setActiveTabState("devices")}
               className={`px-4 py-2 rounded ${
-                activeTab === "devices" ? "bg-blue-600" : "bg-gray-700"
+                activeTabState === "devices" ? "bg-blue-600" : "bg-gray-700"
               }`}
             >
               Devices
@@ -67,15 +73,18 @@ export default function Dashboard(props: DashboardProps) {
           </div>
 
           {/* Tab Content */}
-          {activeTab === "architecture" ? (
-            <DobiChart activeTab={activeTab} />
+          {activeTabState === "architecture" ? (
+            <DobiChart activeTab={activeTabState} />
           ) : (
-            <BubbleMap selectedChargerId={selectedDevice?.id_charger} />
+            <BubbleMap 
+              selectedChargerId={selectedDeviceState?.id_charger} 
+              activeTab={activeTab}
+            />
           )}
 
           {/* Monitor Flow Chart */}
-          {selectedDevice && (
-            <MonitorFlowChart chargerId={selectedDevice.id_charger} />
+          {selectedDeviceState && (
+            <MonitorFlowChart chargerId={selectedDeviceState.id_charger} />
           )}
         </div>
       </div>

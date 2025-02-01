@@ -41,9 +41,10 @@ const nodeTypes = {
 // Add interface for props
 interface BubbleMapProps {
   selectedChargerId?: string;
+  activeTab: "architecture" | "devices";
 }
 
-export default function BubbleMap({ selectedChargerId }: BubbleMapProps) {
+export default function BubbleMap({ selectedChargerId, activeTab }: BubbleMapProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [loading, setLoading] = React.useState(true);
@@ -147,7 +148,7 @@ export default function BubbleMap({ selectedChargerId }: BubbleMapProps) {
 
   return (
     <div className="relative w-full h-full">
-      <GlassmorphismWindow />
+      <GlassmorphismWindow activeTab={activeTab} />
       <animated.div style={styles} className="w-full h-full relative">
         <ReactFlow
           nodes={nodes}

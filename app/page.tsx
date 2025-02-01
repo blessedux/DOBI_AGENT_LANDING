@@ -10,6 +10,7 @@ import BubbleMap from "./components/BubbleMap";
 import DeviceWorkflow from "./components/DeviceWorkflow";
 import MonitorFlowChart from "./components/MonitorFlowChart";
 import GlassmorphismWindow from "./components/ui/GlassmorphismWindow";
+import Dashboard from "./components/Dashboard";
 
 export default function Home() {
   // Maintain active tab state
@@ -51,8 +52,10 @@ export default function Home() {
             setIsSidebarOpen={setIsSidebarOpen}
           />
           
-          {/* Pass activeTab to DobiChart */}
-          <DobiChart activeTab={activeTab} />
+          <Dashboard 
+            activeTab={activeTab}
+            selectedDevice={selectedDevice}
+          />
           
           {/* Pass activeTab to GlassmorphismWindow */}
           <GlassmorphismWindow activeTab={activeTab} />
