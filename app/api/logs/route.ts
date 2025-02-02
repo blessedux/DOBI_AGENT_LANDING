@@ -10,6 +10,57 @@ type LogEntry = z.infer<typeof LogEntrySchema>;
 // In-memory storage for logs (replace with database in production)
 let logs: LogEntry[] = [];
 
+// Simulated logs for testing
+let mockLogs: any[] = [];
+
+// Function to generate a new log with THINK process
+const generateNewLog = () => {
+  const networks = ['Ethereum', 'Polygon', 'BSC'];
+  const statuses = ['pending', 'completed', 'failed'];
+  const actions = ['swap', 'transfer', 'approve', 'stake'];
+  
+  const thinkProcess = `<THINK>
+1. Analyzing transaction request...
+2. Checking gas prices: Current gas price is ${Math.floor(Math.random() * 100)} gwei
+3. Evaluating market conditions:
+   - Network congestion: ${Math.random() > 0.5 ? 'High' : 'Low'}
+   - Price impact: ${(Math.random() * 0.5).toFixed(2)}%
+4. Decision making:
+   - Transaction type: ${actions[Math.floor(Math.random() * actions.length)]}
+   - Priority: ${Math.random() > 0.5 ? 'High' : 'Normal'}
+5. Executing transaction with optimized parameters...
+</THINK>`;
+
+  return {
+    timestamp: new Date().toISOString(),
+    network: networks[Math.floor(Math.random() * networks.length)],
+    status: statuses[Math.floor(Math.random() * statuses.length)],
+    txHash: `0x${Math.random().toString(16).slice(2)}`,
+    sender: `0x${Math.random().toString(16).slice(2, 42)}`,
+    amount: (Math.random() * 10).toFixed(4),
+    raw_response: {
+      message: 'Transaction processed',
+      data: {
+        status: 'success',
+        think_process: thinkProcess,
+        raw_response: thinkProcess,
+        final_decision: `Execute ${actions[Math.floor(Math.random() * actions.length)]} operation`,
+        "contract address": `0x${Math.random().toString(16).slice(2, 42)}`,
+        agent: "DOBI_v1",
+        target: `0x${Math.random().toString(16).slice(2, 42)}`,
+      }
+    }
+  };
+};
+
+// Generate initial set of logs
+if (mockLogs.length === 0) {
+  // Add some initial logs
+  for (let i = 0; i < 5; i++) {
+    mockLogs.push(generateNewLog());
+  }
+}
+
 /**
  * POST /api/logs
  * 

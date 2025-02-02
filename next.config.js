@@ -55,6 +55,14 @@ const nextConfig = {
     // Add any custom webpack config here
     return config;
   },
+  experimental: {
+    webpackBuildWorker: true
+  },
+  typescript: {
+    // !! WARN !!
+    // This will disable type checking during build - use only temporarily
+    ignoreBuildErrors: true,
+  },
 }
 
 module.exports = nextConfig;

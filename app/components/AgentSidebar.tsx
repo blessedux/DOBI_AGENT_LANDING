@@ -3,7 +3,13 @@
 import React from "react";
 import { Badge } from "./ui/Badge";
 import { ScrollArea } from "./ui/ScrollArea";
-import { ChevronRight, ChevronLeft } from "lucide-react"; 
+import { 
+  ChevronRight, 
+  ChevronLeft, 
+  Zap,           // Replace Icon1
+  Battery,       // Replace Icon2
+  Activity       // Replace Icon3
+} from "lucide-react"; 
 import { Charger } from "./DobiChart";
 import Image from 'next/image';
 
@@ -116,38 +122,29 @@ interface AgentSidebarProps {
 }
 
 const AgentSidebar: React.FC<AgentSidebarProps> = ({ 
-  setSelectedDevice, 
+  isSidebarOpen, 
+  setIsSidebarOpen,
   selectedDevice,
-  isSidebarOpen,
-  setIsSidebarOpen
+  setSelectedDevice 
 }) => {
   return (
     <div className={`fixed right-0 top-[64px] bottom-0 bg-white/90 backdrop-blur-md shadow-lg z-[60] 
-      transition-all duration-300 border-l border-gray-100 flex flex-col
-      ${isSidebarOpen ? "w-80" : "w-16"}`}
+        transition-all duration-300 border-l border-gray-100 flex flex-col
+        ${isSidebarOpen ? "w-80" : "w-16"}`}
     >
-      <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-white/90 backdrop-blur-md">
+      <div className="flex items-center justify-between p-4 border-b border-gray-100">
         <button 
           onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
           className="p-2 rounded-full hover:bg-gray-100/80 transition-all"
         >
           {isSidebarOpen ? <ChevronRight className="text-gray-600" /> : <ChevronLeft className="text-gray-600" />}
         </button>
-
-        {isSidebarOpen && (
-          <div className="flex items-center gap-2">
-            <h2 className="font-semibold text-lg">Devices</h2>
-            <Badge variant="outline" className="bg-[#E8EDFF] text-[#2D4EC8]">
-              Actives: {chargers.filter(c => c.status === 'active').length}
-            </Badge>
-          </div>
-        )}
       </div>
 
       {isSidebarOpen && (
         <div className="flex-1 overflow-hidden">
           <ScrollArea className="h-full">
-            <div className="space-y-3 p-4">
+            <div className="p-4 space-y-4">
               {chargers.map((charger, index) => (
                 <div
                   key={charger.id_charger}
@@ -207,6 +204,23 @@ const AgentSidebar: React.FC<AgentSidebarProps> = ({
               ))}
             </div>
           </ScrollArea>
+        </div>
+      )}
+
+      {selectedDevice && (
+        <div className="absolute inset-0 bg-white/95 flex flex-col transition-opacity duration-500">
+          <div className="flex items-center p-4 border-b border-gray-200">
+            <button 
+              onClick={() => setSelectedDevice(null)} 
+              className="p-2 rounded-full hover:bg-gray-100 transition-all mr-4"
+            >
+              <ChevronLeft className="text-gray-600" />
+            </button>
+            <h2 className="text-xl font-semibold">{selectedDevice.name}</h2>
+          </div>
+          <div className="p-4 flex-1 overflow-auto">
+            {/* ... existing device details ... */}
+          </div>
         </div>
       )}
     </div>

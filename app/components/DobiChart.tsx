@@ -177,7 +177,7 @@ export default function DobiChart({ activeTab }: DobiChartProps) {
   return (
     <div className="flex-1 relative">
       <div className="relative w-full h-screen overflow-hidden touch-none">
-        <GlassmorphismWindow activeTab={activeTab} />
+        <GlassmorphismWindow />
         
         {transitions((styles, tab) => (
           <animated.div
@@ -196,9 +196,9 @@ export default function DobiChart({ activeTab }: DobiChartProps) {
                 onNodesChange={onNodesChange}
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
-                fitView
                 nodeTypes={nodeTypes}
                 edgeTypes={edgeTypes}
+                fitView
                 className="w-full h-full min-h-[500px] bg-transparent"
               >
                 <Background 
@@ -210,7 +210,12 @@ export default function DobiChart({ activeTab }: DobiChartProps) {
                 <Controls />
               </ReactFlow>
             ) : (
-              <BubbleMap activeTab={activeTab} />
+              <BubbleMap 
+                activeTab={activeTab}
+                isOverlayVisible={true}
+                selectedView={null}
+                selectedChargerId={undefined}
+              />
             )}
           </animated.div>
         ))}

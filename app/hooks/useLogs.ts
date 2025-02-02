@@ -1,45 +1,61 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { TransactionLog } from '../types/logs';
 import { env, validateEnv } from '../config/env';
+import { parseISO } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
 
-export function useLogs() {
+export const useLogs = () => {
   const [logs, setLogs] = useState<TransactionLog[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
-  useEffect(() => {
-    const fetchLogs = async () => {
-      try {
-        const response = await fetch('/api/logs');
-        console.log('Response status:', response.status);
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log('Received logs data:', data);
-
-        if (Array.isArray(data)) {
-          setLogs(data);
-        } else {
-          console.error('Unexpected data format:', data);
-          setLogs([]);
-        }
-        
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching logs:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch logs');
-      } finally {
-        setLoading(false);
+  const fetchLogs = useCallback(async () => {
+    try {
+      setLoading(true);
+      // Add timestamp to prevent caching
+      const response = await fetch(`/api/logs?t=${Date.now()}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch logs');
       }
-    };
+      const data = await response.json();
+      
+      const transformedData = data.map((log: TransactionLog) => ({
+        ...log,
+        timestamp: log.timestamp || new Date().toISOString(),
+      }));
 
-    fetchLogs();
-    const interval = setInterval(fetchLogs, 5000);
-    return () => clearInterval(interval);
+      console.log('Fetched logs:', transformedData.length);
+      setLogs(transformedData);
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching logs:', err);
+      setError(err instanceof Error ? err : new Error('Unknown error'));
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  return { logs, loading, error };
-} 
+  // Set up more frequent polling (every 2 seconds)
+  useEffect(() => {
+    // Initial fetch
+    fetchLogs();
+    
+    // Set up polling interval
+    const interval = setInterval(() => {
+      console.log('Polling for new logs...');
+      fetchLogs();
+    }, 2000); // Poll every 2 seconds
+
+    return () => {
+      console.log('Cleaning up logs polling');
+      clearInterval(interval);
+    };
+  }, [fetchLogs]);
+
+  const refresh = useCallback(() => {
+    console.log('Manual refresh triggered');
+    fetchLogs();
+  }, [fetchLogs]);
+
+  return { logs, loading, error, refresh };
+}; 

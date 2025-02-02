@@ -2,17 +2,23 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useLogs } from '../../hooks/useLogs';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, parseISO } from 'date-fns';
 import { TransactionLog } from '../../types/logs';
 
 // Helper function to safely format timestamp
 const formatTimestamp = (timestamp: string) => {
   try {
-    const date = new Date(timestamp);
+    const date = parseISO(timestamp);
     if (isNaN(date.getTime())) {
       return 'Invalid date';
     }
-    return formatDistanceToNow(date, { addSuffix: true });
+    // Format as HH:mm:ss
+    return date.toLocaleTimeString('en-US', { 
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
   } catch (error) {
     console.error('Error formatting timestamp:', error);
     return 'Invalid date';
@@ -40,7 +46,7 @@ const getStatusColor = (status: string | undefined) => {
   }
 };
 
-const LogEntry = ({ log }: { log: TransactionLog }) => {
+const LogEntry = ({ log, isNew }: { log: TransactionLog; isNew?: boolean }) => {
   const [showRawData, setShowRawData] = useState(false);
 
   // Helper function to format the think content
@@ -67,7 +73,8 @@ const LogEntry = ({ log }: { log: TransactionLog }) => {
   const thinkContent = formatThinkContent(log.raw_response);
   
   return (
-    <div className="mb-3 hover:bg-white/5 p-2 rounded border border-gray-800/20">
+    <div className={`mb-3 p-2 rounded border border-gray-800/20 transition-all duration-500 
+      ${isNew ? 'bg-blue-500/10 animate-pulse' : 'hover:bg-white/5'}`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <span className="text-white-400">
@@ -84,18 +91,23 @@ const LogEntry = ({ log }: { log: TransactionLog }) => {
               `${log.sender.slice(0, 6)}...${log.sender.slice(-4)}` : 
               'unknown-sender'}
           </span>
-          <span className="text-white-500">
-            tx: {log.txHash ? 
+          <a
+            href={`https://explorer.mantle.xyz/tx/${log.txHash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-400 hover:underline"
+          >
+            {log.txHash ? 
               `${log.txHash.slice(0, 8)}...${log.txHash.slice(-6)}` : 
               'unknown-hash'}
-          </span>
+          </a>
         </div>
         <button
           onClick={() => setShowRawData(!showRawData)}
           className={`text-xs px-2 py-1 rounded transition-colors ${
             showRawData 
-              ? 'bg-blue-500/10 text-blue-400' 
-              : 'text-gray-400 hover:text-white'
+              ? 'bg-blue-500/10 text-red-400' 
+              : 'text-white-400 hover:text-white'
           }`}
         >
           {showRawData ? 'Hide Details' : 'Show Details'}
@@ -147,17 +159,38 @@ const LogEntry = ({ log }: { log: TransactionLog }) => {
 };
 
 export default function LogsViewer() {
-  const [height, setHeight] = useState(120);
+  const { logs, loading, error, refresh } = useLogs();
+  const [height, setHeight] = useState(300);
   const [isExpanded, setIsExpanded] = useState(false);
   const logsEndRef = useRef<HTMLDivElement>(null);
-  const { logs, loading, error } = useLogs();
+  const [showRawData, setShowRawData] = useState(false);
+  const [lastUpdateTime, setLastUpdateTime] = useState<Date>(new Date());
+  const [previousLogsLength, setPreviousLogsLength] = useState(0);
 
-  // Auto-scroll to bottom when new logs are added
+  // Check for new logs and print them
   useEffect(() => {
-    if (!isExpanded) {
-      logsEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (logs.length > previousLogsLength) {
+      const newLogs = logs.slice(previousLogsLength);
+      
+      // Print new logs to console
+      console.group(`🔵 New Logs Received (${newLogs.length})`);
+      newLogs.forEach(log => {
+        console.log(
+          `%c${formatTimestamp(log.timestamp)} | ${log.network} | ${log.status}`,
+          'color: #4CAF50; font-weight: bold'
+        );
+        if (log.raw_response) {
+          console.log('📝 Details:', log.raw_response);
+        }
+      });
+      console.groupEnd();
+      
+      // Auto-scroll to bottom for new logs
+      logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      setLastUpdateTime(new Date());
+      setPreviousLogsLength(logs.length);
     }
-  }, [logs, isExpanded]);
+  }, [logs, previousLogsLength]);
 
   // Handle click to expand/collapse
   const toggleExpand = () => {
@@ -194,11 +227,12 @@ export default function LogsViewer() {
     document.addEventListener("mouseup", onMouseUp);
   };
 
-  const renderError = (error: string) => {
+  const renderError = (error: Error | string) => {
+    const errorMessage = error instanceof Error ? error.message : error;
     return (
       <div className="p-4">
         <div className="text-red-400 font-mono">
-          <span className="text-yellow-400">[ERROR]</span> {error}
+          <span className="text-yellow-400">[ERROR]</span> {errorMessage}
         </div>
         <div className="mt-2 text-gray-400 text-xs">
           Please check:
@@ -226,6 +260,7 @@ export default function LogsViewer() {
         <div className="flex items-center gap-4">
           <span className="text-xs text-gray-400">DOBI Smart Contract Logs</span>
           {loading && <span className="text-xs text-yellow-400 animate-pulse">Syncing...</span>}
+          {!loading && <span className="text-xs text-gray-400">Last update: {formatDistanceToNow(lastUpdateTime, { addSuffix: true })}</span>}
           {error && <span className="text-xs text-red-400">Connection Error</span>}
         </div>
       </div>
@@ -234,8 +269,12 @@ export default function LogsViewer() {
         {error ? (
           renderError(error)
         ) : (
-          logs.map((log) => (
-            <LogEntry key={log.txHash || Math.random()} log={log} />
+          logs.map((log, index) => (
+            <LogEntry 
+              key={log.txHash || Math.random()} 
+              log={log} 
+              isNew={index >= previousLogsLength - 1}
+            />
           ))
         )}
         <div ref={logsEndRef} />

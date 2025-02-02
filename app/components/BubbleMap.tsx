@@ -1,170 +1,202 @@
 "use client";
 
-import React, { useCallback } from 'react';
+import React from 'react';
+import { motion } from 'framer-motion';
 import ReactFlow, {
-  MiniMap,
-  Controls,
   Background,
-  useNodesState,
-  useEdgesState,
-  Node,
-  Edge,
+  Controls,
   ReactFlowProvider,
-  useReactFlow,
+  Node,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import type { Charger } from './DobiChart';
-import Image from 'next/image';
-
-// Define chargers data
-const chargers: Charger[] = [
-  {
-    id_charger: "CHG-001",
-    name: "Fast Charger A1",
-    model: "ABB Fast",
-    image: "",
-    location: { latitude: -33.4489, longitude: -70.6693, address: "Santiago, Chile" },
-    company_owner: "Ehive SPA",
-    creation_date: "2023-12-01",
-    status: "active",
-    transactions: 1200,
-    cost_generated: 5000.75,
-    income_generated: 15000.5,
-    balance_total: 10000.25,
-  },
-  {
-    id_charger: "CHG-002",
-    name: "Eco Charger B3",
-    model: "ABB Slow",
-    image: "",
-    location: { latitude: -33.4567, longitude: -70.6723, address: "Providencia, Chile" },
-    company_owner: "Ehive SPA",
-    creation_date: "2024-01-15",
-    status: "maintenance",
-    transactions: 450,
-    cost_generated: 2000.0,
-    income_generated: 6500.0,
-    balance_total: 4500.0,
-  },
-  // ... add other chargers
-];
-
-// Custom Node Component for DOBI center node
-const DobiNode = ({ data }: { data: any }) => (
-  <div className="w-28 h-28 bg-white rounded-full flex items-center justify-center shadow-lg">
-    <div className="w-full h-full p-3 rounded-full bg-white flex items-center justify-center">
-      <Image 
-        src="/icons/dobi-icon.png" 
-        alt="DOBI"
-        width={112}
-        height={112}
-        className="w-full h-full object-contain"
-      />
-    </div>
-  </div>
-);
-
-// Custom Node Component for charger nodes
-const ChargerNode = ({ data }: { data: any }) => (
-  <div 
-    className={`w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110
-      ${data.status === 'active' ? 'bg-[#86efac]' : 'bg-[#a5b4fc]'}`}
-    style={{ opacity: 0.8 }}
-  >
-    <div className="text-center">
-      <div className="text-sm font-bold text-gray-800">
-        {data.name.split(' ').pop()}
-      </div>
-      <div className="text-xs text-gray-600">
-        {data.transactions} tx
-      </div>
-    </div>
-  </div>
-);
-
-// Register custom nodes
-const nodeTypes = {
-  dobiNode: DobiNode,
-  chargerNode: ChargerNode,
-};
 
 interface BubbleMapProps {
   selectedChargerId?: string;
-  activeTab: "architecture" | "devices";
+  activeTab: string;
+  isOverlayVisible: boolean;
+  selectedView: 'chargerDetails' | 'dobichart' | null;
 }
 
-function Flow({ selectedChargerId, activeTab }: BubbleMapProps) {
-  const { setViewport } = useReactFlow();
-  const radius = 200;
-  const centerX = window.innerWidth / 2;
-  const centerY = window.innerHeight / 2;
-
-  // Set initial viewport on mount
-  React.useEffect(() => {
-    setViewport({ x: 0, y: 0, zoom: 0.75 });
-  }, [setViewport]);
-
-  const initialNodes: Node[] = [
-    {
-      id: 'dobi-center',
-      type: 'dobiNode',
-      position: { x: centerX - 56, y: centerY - 56 },
-      data: { label: 'DOBI' },
-    },
-    ...chargers.map((charger, index) => {
-      const angle = (index * (360 / chargers.length)) * (Math.PI / 180);
-      const x = centerX + Math.cos(angle) * radius - 32;
-      const y = centerY + Math.sin(angle) * radius - 32;
-      
-      return {
-        id: charger.id_charger,
-        type: 'chargerNode',
-        position: { x, y },
-        data: { ...charger },
-      };
-    }),
-  ];
-
-  const initialEdges: Edge[] = chargers.map((charger) => ({
-    id: `edge-${charger.id_charger}`,
-    source: 'dobi-center',
-    target: charger.id_charger,
-    style: { 
-      stroke: charger.status === 'active' ? '#86efac' : '#a5b4fc',
-      strokeWidth: 2,
-      opacity: 0.4,
-    },
-    type: 'straight',
-  }));
-
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-
+// Custom Node Component for the entire bubble layout
+const BubbleLayoutNode = () => {
   return (
-    <ReactFlow
-      nodes={nodes}
-      edges={edges}
-      onNodesChange={onNodesChange}
-      onEdgesChange={onEdgesChange}
-      nodeTypes={nodeTypes}
-      fitView
-      className="bg-white"
-      minZoom={0.5}
-      maxZoom={1.5}
-    >
-      <Controls />
-      <Background color="#aaa" gap={16} />
-    </ReactFlow>
-  );
-}
+    <div className="relative w-[800px] h-[800px]">
+      {/* Center Icon */}
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-white rounded-full flex items-center justify-center z-10">
+        <img src="/icons/dobi-icon.png" alt="Dobi" className="w-16 h-16" />
+      </div>
 
-// Wrap the component with ReactFlowProvider
-export default function BubbleMap(props: BubbleMapProps) {
-  return (
-    <div className="w-full h-full bg-white">
-      <ReactFlowProvider>
-        <Flow {...props} />
-      </ReactFlowProvider>
+      {/* Green Circles - Top */}
+      <motion.div
+        className="absolute w-16 h-16 bg-green-400/50 rounded-full"
+        style={{ top: '15%', left: '45%' }}
+        animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.8, 0.5] }}
+        transition={{ duration: 2, repeat: Infinity }}
+      />
+      <motion.div
+        className="absolute w-12 h-12 bg-green-400/50 rounded-full"
+        style={{ top: '20%', transform: 'translateX(30px)' }}
+        animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.8, 0.5] }}
+        transition={{ duration: 2, repeat: Infinity, delay: 0.3 }}
+      />
+
+      {/* Green Circles - Bottom */}
+      <motion.div
+        className="absolute w-16 h-16 bg-green-400/50 rounded-full"
+        style={{ bottom: '15%', transform: 'translateX(-20px)' }}
+        animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.8, 0.5] }}
+        transition={{ duration: 2, repeat: Infinity }}
+      />
+      <motion.div
+        className="absolute w-12 h-12 bg-green-400/50 rounded-full"
+        style={{ bottom: '20%', transform: 'translateX(30px)' }}
+        animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.8, 0.5] }}
+        transition={{ duration: 2, repeat: Infinity, delay: 0.3 }}
+      />
+
+      {/* Green Circles - Left */}
+      <motion.div
+        className="absolute w-16 h-16 bg-green-400/50 rounded-full"
+        style={{ left: '15%', transform: 'translateY(-20px)' }}
+        animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.8, 0.5] }}
+        transition={{ duration: 2, repeat: Infinity }}
+      />
+      <motion.div
+        className="absolute w-12 h-12 bg-green-400/50 rounded-full"
+        style={{ left: '20%', transform: 'translateY(30px)' }}
+        animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.8, 0.5] }}
+        transition={{ duration: 2, repeat: Infinity, delay: 0.3 }}
+      />
+
+      {/* Green Circles - Right */}
+      <motion.div
+        className="absolute w-16 h-16 bg-green-400/50 rounded-full"
+        style={{ right: '15%', transform: 'translateY(-20px)' }}
+        animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.8, 0.5] }}
+        transition={{ duration: 2, repeat: Infinity }}
+      />
+      <motion.div
+        className="absolute w-12 h-12 bg-green-400/50 rounded-full"
+        style={{ right: '20%', transform: 'translateY(30px)' }}
+        animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.8, 0.5] }}
+        transition={{ duration: 2, repeat: Infinity, delay: 0.3 }}
+      />
+
+      {/* Purple Circles - Diagonals */}
+      {/* Top Left */}
+      <motion.div
+        className="absolute w-20 h-20 bg-purple-400/50 rounded-full"
+        style={{ top: '20%', left: '20%' }}
+        animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.8, 0.5] }}
+        transition={{ duration: 2, repeat: Infinity }}
+      />
+      <motion.div
+        className="absolute w-16 h-16 bg-purple-400/50 rounded-full"
+        style={{ top: '25%', left: '25%' }}
+        animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.8, 0.5] }}
+        transition={{ duration: 2, repeat: Infinity, delay: 0.3 }}
+      />
+
+      {/* Top Right */}
+      <motion.div
+        className="absolute w-20 h-20 bg-purple-400/50 rounded-full"
+        style={{ top: '20%', right: '20%' }}
+        animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.8, 0.5] }}
+        transition={{ duration: 2, repeat: Infinity }}
+      />
+      <motion.div
+        className="absolute w-16 h-16 bg-purple-400/50 rounded-full"
+        style={{ top: '25%', right: '25%' }}
+        animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.8, 0.5] }}
+        transition={{ duration: 2, repeat: Infinity, delay: 0.3 }}
+      />
+
+      {/* Bottom Left */}
+      <motion.div
+        className="absolute w-20 h-20 bg-purple-400/50 rounded-full"
+        style={{ bottom: '20%', left: '20%' }}
+        animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.8, 0.5] }}
+        transition={{ duration: 2, repeat: Infinity }}
+      />
+      <motion.div
+        className="absolute w-16 h-16 bg-purple-400/50 rounded-full"
+        style={{ bottom: '25%', left: '25%' }}
+        animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.8, 0.5] }}
+        transition={{ duration: 2, repeat: Infinity, delay: 0.3 }}
+      />
+
+      {/* Bottom Right */}
+      <motion.div
+        className="absolute w-20 h-20 bg-purple-400/50 rounded-full"
+        style={{ bottom: '20%', right: '20%' }}
+        animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.8, 0.5] }}
+        transition={{ duration: 2, repeat: Infinity }}
+      />
+      <motion.div
+        className="absolute w-16 h-16 bg-purple-400/50 rounded-full"
+        style={{ bottom: '25%', right: '25%' }}
+        animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.8, 0.5] }}
+        transition={{ duration: 2, repeat: Infinity, delay: 0.3 }}
+      />
     </div>
   );
-}
+};
+
+const nodeTypes = {
+  bubbleLayout: BubbleLayoutNode,
+};
+
+const BubbleMap: React.FC<BubbleMapProps> = ({ 
+  selectedChargerId, 
+  activeTab, 
+  isOverlayVisible, 
+  selectedView 
+}) => {
+  const initialNodes: Node[] = [
+    {
+      id: 'bubble-layout',
+      type: 'bubbleLayout',
+      position: { x: 0, y: 0 },
+      data: {},
+      draggable: false,
+    },
+  ];
+
+  return (
+    <div className="w-full h-full">
+      <ReactFlowProvider>
+        <ReactFlow
+          nodes={initialNodes}
+          nodeTypes={nodeTypes}
+          fitView
+          panOnScroll
+          panOnDrag
+          zoomOnScroll={false}
+          nodesDraggable={false}
+          preventScrolling={false}
+          minZoom={0.5}
+          maxZoom={1.5}
+          className="w-full h-full"
+        >
+          <Background color="#aaa" gap={16} />
+          <Controls showInteractive={false} />
+        </ReactFlow>
+      </ReactFlowProvider>
+
+      {/* Conditional Views */}
+      {selectedView === 'chargerDetails' && (
+        <div className="absolute inset-0 bg-white/90 backdrop-blur-md transition-opacity duration-500">
+          {/* Charger Details Content */}
+        </div>
+      )}
+
+      {selectedView === 'dobichart' && (
+        <div className="absolute inset-0 bg-white/90 backdrop-blur-md transition-opacity duration-500">
+          {/* DobiChart Content */}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default BubbleMap;
