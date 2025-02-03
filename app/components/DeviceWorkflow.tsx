@@ -1,17 +1,9 @@
 "use client";
 
 import React from "react";
-import ReactFlow, {
-  Background,
-  Controls,
-  Node,
-  Edge,
-  useNodesState,
-  useEdgesState,
-  ReactFlowInstance,
-  ReactFlowProvider,
-} from "reactflow";
-import "reactflow/dist/style.css";
+import { Button } from "./ui/button";
+import { X } from "lucide-react";
+import MilestoneChart from './MilestoneChart';
 import { Charger } from './DobiChart';
 
 interface DeviceWorkflowProps {
@@ -19,41 +11,33 @@ interface DeviceWorkflowProps {
   onClose: () => void;
 }
 
-// Simplified component with minimal functionality
-export default function DeviceWorkflow({ selectedDevice, onClose }: DeviceWorkflowProps) {
-  // Simple static nodes and edges
-  const nodes: Node[] = [
-    {
-      id: '1',
-      type: 'default',
-      data: { label: 'Device Node' },
-      position: { x: 250, y: 0 },
-    }
-  ];
-
-  const edges: Edge[] = [];
-
+const DeviceWorkflow: React.FC<DeviceWorkflowProps> = ({ 
+  selectedDevice, 
+  onClose 
+}) => {
   return (
-    <div className="h-full relative">
-      <button
-        onClick={onClose}
-        className="absolute top-4 right-4 z-50 px-4 py-2 bg-white rounded-lg shadow-md hover:bg-gray-50"
-      >
-        Close
-      </button>
-      
-      <div className="w-full h-full">
-        <ReactFlowProvider>
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            fitView
-          >
-            <Controls />
-            <Background color="#aaa" gap={16} />
-          </ReactFlow>
-        </ReactFlowProvider>
+    <div className="h-full bg-white-900/95 backdrop-blur-sm text-grey">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-semibold">
+          Device Workflow: {selectedDevice.id_charger}
+        </h2>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onClose}
+          className="text-gray-400 hover:text-white"
+        >
+          <X className="h-5 w-5" />
+        </Button>
+      </div>
+
+      {/* Milestone Chart */}
+      <div className="h-[calc(100vh-200px)] w-full">
+        <MilestoneChart />
       </div>
     </div>
   );
-} 
+};
+
+export default DeviceWorkflow; 

@@ -20,7 +20,7 @@ export default function Navbar({ activeTab, setActiveTab, isSidebarOpen = true }
     `}>
       {/* Left Section - Logo and Brand */}
       <div className="flex items-center space-x-3">
-        <Link href="/" className="flex items-center space-x-2">
+        <Link href="https://dobprotocol.com" className="flex items-center space-x-2">
           <Image 
             src="/icons/dobprotocol-logo.svg" 
             alt="DOB Protocol" 
