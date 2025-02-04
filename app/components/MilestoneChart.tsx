@@ -5,7 +5,7 @@ import MilestoneRoadmap from "./ui/MilestoneRoadmap";
 
 const MilestoneChart = () => {
   return (
-    <div className="w-full h-[729px] bg-white overflow-hidden">
+    <div className="w-full h-[800px] bg-white overflow-hidden">
       <MilestoneRoadmap />
     </div>
   );

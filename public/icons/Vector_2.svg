@@ -1,3 +1,27 @@
 <svg width="1277" height="729" viewBox="0 0 1277 729" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M1275 2L1164.62 2H1029.48C995.545 1.99984 948.385 7.49385 930.444 27.2093C917.719 41.1931 902.442 69.2788 945.918 105.638C989.395 141.997 1172.87 219.079 1192.47 296.106C1203.63 339.942 1187.08 389.202 1120.26 405.346C998.53 434.756 781.178 310.503 630.247 259.693C576.263 233.437 510.424 234.484 489.949 274.746C473.388 307.311 468.285 324.116 508.518 373.134C565.833 442.965 663.715 505.533 690.08 572.006C704.523 608.419 679.112 678.482 627.152 703.653C575.193 728.825 444.187 754.403 320.12 660.709C196.053 567.015 38.0536 488.704 2 484.509" stroke="#C8D3F1" stroke-width="4" stroke-linecap="round"/>
 </svg>
+
+
+<svg      width="100%"
+          height="100%"
+          viewBox={`0 0 ${viewportWidth} 729`}
+          fill="none"
+          preserveAspectRatio="xMidYMid meet"
+          className="absolute top-0 left-0"
+          style={{
+            overflow: 'visible'
+          }}
+        >
+          <motion.path
+            className="milestone-path stroke-[#C8D3F1] stroke-[4] fill-none"
+            strokeLinecap="round"
+            d={getElasticPath()}
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{
+              duration: 1.5,
+              ease: "easeInOut"
+            }}
+          />
+        </svg>
