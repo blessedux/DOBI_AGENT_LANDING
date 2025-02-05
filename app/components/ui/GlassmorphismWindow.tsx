@@ -84,33 +84,28 @@ const GlassmorphismWindow: React.FC<GlassmorphismWindowProps> = ({ activeTab }) 
   };
 
   return (
-    <div 
-      className={`absolute top-20 left-4 z-30 rounded-lg backdrop-blur-md bg-gray-800/50 
-        border border-gray-300/50 shadow-lg ${activeTab === "devices" ? "hidden" : ""}`}
-      style={{ width: `${width}px` }}
-    >
-      {/* Terminal Header */}
-      <div className="flex items-center justify-between px-4 py-2 border-b border-gray-600/50">
-        <div className="text-gray-400 text-sm font-mono">DOBI Agent v1.0 Features</div>
-        <div 
-          className="w-4 h-full cursor-ew-resize"
-          onMouseDown={startResizing}
-        >
-          <div className="w-1 h-4 bg-gray-500/50 rounded-full mx-auto mt-1" />
-        </div>
+    <div className={`
+      fixed top-20 left-8 
+      bg-white/10 backdrop-blur-md 
+      border border-white/20 rounded-2xl 
+      shadow-2xl shadow-black/10
+      transition-all duration-300
+      md:w-[320px] md:h-[200px]
+      w-[280px] h-[160px]
+      flex flex-col
+      overflow-hidden
+    `}>
+      <div className="flex items-center p-4 border-b border-white/10">
+        <div className="text-xs text-white/60">Terminal</div>
       </div>
-
-      {/* Terminal Content - Fixed Height */}
-      <div className="p-4 h-[300px] overflow-y-auto custom-scrollbar">
-        <div className="font-mono text-sm">
-          <div className="text-gray-200 leading-relaxed">
-            <span className="text-blue-400">dobi@agent</span>
-            <span className="text-gray-400">:</span>
-            <span className="text-green-400">~</span>
-            <span className="text-gray-400">$ </span>
-            <span>{currentBulletIndex + 1}. {currentText}</span>
-            <span className="inline-block w-2 h-4 bg-gray-200 ml-1 animate-pulse">▋</span>
-          </div>
+      <div className="flex-1 p-4 text-[10px] leading-5 text-white/80 font-mono">
+        <div className="text-gray-200 leading-relaxed">
+          <span className="text-blue-400">dobi@agent</span>
+          <span className="text-gray-400">:</span>
+          <span className="text-green-400">~</span>
+          <span className="text-gray-400">$ </span>
+          <span>{currentBulletIndex + 1}. {currentText}</span>
+          <span className="inline-block w-2 h-4 bg-gray-200 ml-1 animate-pulse">▋</span>
         </div>
       </div>
     </div>
