@@ -275,10 +275,13 @@ const MilestoneRoadmap: React.FC<MilestoneRoadmapProps> = ({ device }) => {
                     key={milestone.id}
                     className="absolute"
                     initial={{ opacity: 0, scale: 0.5 }}
-                    animate={{ opacity: 1, scale: 1 }}
+                    animate={{ 
+                      opacity: activeMilestone === null || activeMilestone === milestone.id ? 1 : 0,
+                      scale: 1 
+                    }}
                     transition={{
                       duration: 0.6,
-                      delay: index * 0.15,
+                      delay: activeMilestone === null ? index * 0.15 : 0,
                       ease: "easeOut"
                     }}
                     style={{
@@ -297,10 +300,13 @@ const MilestoneRoadmap: React.FC<MilestoneRoadmapProps> = ({ device }) => {
                       <motion.div
                         className="w-8 h-8 rounded-full bg-blue-500 border-2 border-white shadow-lg cursor-pointer overflow-hidden relative z-[5]"
                         initial={{ scale: 0.5, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
+                        animate={{ 
+                          scale: 1, 
+                          opacity: activeMilestone === null || activeMilestone === milestone.id ? 1 : 0 
+                        }}
                         transition={{
                           duration: 0.4,
-                          delay: index * 0.15 + 0.2,
+                          delay: activeMilestone === null ? index * 0.15 + 0.2 : 0,
                           ease: "easeOut"
                         }}
                       >
