@@ -127,6 +127,14 @@ const AgentSidebar: React.FC<AgentSidebarProps> = ({
   selectedDevice,
   setSelectedDevice 
 }) => {
+  const handleChevronClick = () => {
+    if (selectedDevice) {
+      setSelectedDevice(null);
+    } else {
+      setIsSidebarOpen(!isSidebarOpen);
+    }
+  };
+
   return (
     <div className={`fixed right-0 top-[64px] bottom-0 bg-white/90 backdrop-blur-md shadow-lg z-[60] 
         transition-all duration-300 border-l border-gray-100 flex flex-col
@@ -134,52 +142,51 @@ const AgentSidebar: React.FC<AgentSidebarProps> = ({
     >
       <div className="flex items-center justify-between p-4 border-b border-gray-100">
         <button 
-          onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
+          onClick={handleChevronClick}
           className="p-2 rounded-full hover:bg-gray-100/80 transition-all"
         >
           {isSidebarOpen ? <ChevronRight className="text-gray-600" /> : <ChevronLeft className="text-gray-600" />}
         </button>
       </div>
 
-      {isSidebarOpen && (
-        <div className="flex-1 overflow-hidden">
-          <ScrollArea className="h-full">
-            <div className="p-4 space-y-4">
-              {chargers.map((charger, index) => (
-                <div
-                  key={charger.id_charger}
-                  className={`p-4 rounded-xl border transition-all hover:shadow-md cursor-pointer
-                    ${selectedDevice?.id_charger === charger.id_charger
-                      ? "bg-[#E8EDFF] border-[#2D4EC8]"
-                      : "hover:bg-gray-50 border-gray-100"
-                    }`}
-                  onClick={() => {
-                    setSelectedDevice(charger);
-                  }}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <div className="w-12 h-12 rounded-full bg-[#E8EDFF] flex items-center justify-center overflow-hidden">
-                        <Image 
-                          src="/icons/Zap_Icon.png"
-                          alt="Zap Icon"
-                          width={48}
-                          height={48}
-                          className="w-[120%] h-[120%] object-cover"
-                          style={{ transform: 'scale(1.2)' }}
-                        />
-                      </div>
-                      <Badge 
-                        className={`absolute -top-1 -right-1 px-2 py-0.5 text-[10px] ${
-                          charger.status === 'active' 
-                            ? 'bg-green-400 text-white'
-                            : 'bg-blue-400 text-white'
-                        }`}
-                      >
-                        #{index + 1}
-                      </Badge>
+      {/* Device list */}
+      <div className="flex-1 overflow-hidden">
+        <ScrollArea className="h-full">
+          <div className="p-4 space-y-4">
+            {chargers.map((charger, index) => (
+              <button
+                key={charger.id_charger}
+                onClick={() => setSelectedDevice(charger)}
+                className={`w-full p-4 rounded-xl border transition-all hover:shadow-md cursor-pointer text-left
+                  ${selectedDevice?.id_charger === charger.id_charger
+                    ? "bg-[#E8EDFF] border-[#2D4EC8]"
+                    : "hover:bg-gray-50 border-gray-100"
+                  }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <div className="w-12 h-12 rounded-full bg-[#E8EDFF] flex items-center justify-center overflow-hidden">
+                      <Image 
+                        src="/icons/Zap_Icon.png"
+                        alt="Zap Icon"
+                        width={48}
+                        height={48}
+                        className="w-[120%] h-[120%] object-cover"
+                        style={{ transform: 'scale(1.2)' }}
+                      />
                     </div>
-                    
+                    <Badge 
+                      className={`absolute -top-1 -right-1 px-2 py-0.5 text-[10px] ${
+                        charger.status === 'active' 
+                          ? 'bg-green-400 text-white'
+                          : 'bg-blue-400 text-white'
+                      }`}
+                    >
+                      #{index + 1}
+                    </Badge>
+                  </div>
+                  
+                  {isSidebarOpen && (
                     <div className="flex-1">
                       <h3 className="font-medium text-gray-900">{charger.name}</h3>
                       <div className="flex items-center gap-1 text-xs text-gray-500">
@@ -188,8 +195,10 @@ const AgentSidebar: React.FC<AgentSidebarProps> = ({
                         <span>{charger.location.address}</span>
                       </div>
                     </div>
-                  </div>
+                  )}
+                </div>
 
+                {isSidebarOpen && (
                   <div className="grid grid-cols-2 gap-4 mt-4">
                     <div>
                       <p className="text-xs text-[#2D4EC8] font-medium">Transactions</p>
@@ -200,29 +209,12 @@ const AgentSidebar: React.FC<AgentSidebarProps> = ({
                       <p className="text-lg font-semibold">${charger.balance_total.toLocaleString()}</p>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </ScrollArea>
-        </div>
-      )}
-
-      {selectedDevice && (
-        <div className="absolute inset-0 bg-white/95 flex flex-col transition-opacity duration-500">
-          <div className="flex items-center p-4 border-b border-gray-200">
-            <button 
-              onClick={() => setSelectedDevice(null)} 
-              className="p-2 rounded-full hover:bg-gray-100 transition-all mr-4"
-            >
-              <ChevronLeft className="text-gray-600" />
-            </button>
-            <h2 className="text-xl font-semibold">{selectedDevice.name}</h2>
+                )}
+              </button>
+            ))}
           </div>
-          <div className="p-4 flex-1 overflow-auto">
-            {/* ... existing device details ... */}
-          </div>
-        </div>
-      )}
+        </ScrollArea>
+      </div>
     </div>
   );
 };

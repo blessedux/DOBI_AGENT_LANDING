@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Charger } from "@/types/types";
-import MilestoneChart from "./MilestoneChart"; // New chart component
+import MilestoneRoadmap from "./ui/MilestoneRoadmap"; // New chart component
 
 interface BubbleLayoutProps {
   children: React.ReactNode;
@@ -33,7 +33,7 @@ const BubbleLayout: React.FC<BubbleLayoutProps> = ({
         {children}
 
         {/* Conditionally Render Chart on Charger Selection */}
-        {selectedView === "dobichart" && <MilestoneChart />}
+        {selectedView === "dobichart" && <MilestoneRoadmap />}
       </div>
     </div>
   );

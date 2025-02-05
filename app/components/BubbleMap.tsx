@@ -14,7 +14,7 @@ interface BubbleMapProps {
   selectedChargerId?: string;
   activeTab: string;
   isOverlayVisible: boolean;
-  selectedView: 'chargerDetails' | 'dobichart' | null;
+  selectedView: string | null;
 }
 
 // Custom Node Component for the entire bubble layout
@@ -146,11 +146,11 @@ const nodeTypes = {
   bubbleLayout: BubbleLayoutNode,
 };
 
-const BubbleMap: React.FC<BubbleMapProps> = ({ 
-  selectedChargerId, 
-  activeTab, 
-  isOverlayVisible, 
-  selectedView 
+const BubbleMap: React.FC<BubbleMapProps> = ({
+  selectedChargerId,
+  activeTab,
+  isOverlayVisible,
+  selectedView,
 }) => {
   const initialNodes: Node[] = [
     {

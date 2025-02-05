@@ -48,6 +48,19 @@ const getStatusColor = (status: string | undefined) => {
 
 const LogEntry = ({ log, isNew }: { log: TransactionLog; isNew?: boolean }) => {
   const [showRawData, setShowRawData] = useState(false);
+  const [expandedLogs, setExpandedLogs] = useState<Set<string>>(new Set());
+
+  const toggleLogDetails = (logId: string) => {
+    setExpandedLogs(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(logId)) {
+        newSet.delete(logId);
+      } else {
+        newSet.add(logId);
+      }
+      return newSet;
+    });
+  };
 
   // Helper function to format the think content
   const formatThinkContent = (rawResponse: any) => {
@@ -71,6 +84,8 @@ const LogEntry = ({ log, isNew }: { log: TransactionLog; isNew?: boolean }) => {
 
   // Get think content
   const thinkContent = formatThinkContent(log.raw_response);
+  
+  const isExpanded = expandedLogs.has(log.txHash);
   
   return (
     <div className={`mb-3 p-2 rounded border border-gray-800/20 transition-all duration-500 
@@ -103,14 +118,14 @@ const LogEntry = ({ log, isNew }: { log: TransactionLog; isNew?: boolean }) => {
           </a>
         </div>
         <button
-          onClick={() => setShowRawData(!showRawData)}
+          onClick={() => toggleLogDetails(log.txHash)}
           className={`text-xs px-2 py-1 rounded transition-colors ${
-            showRawData 
+            isExpanded 
               ? 'bg-blue-500/10 text-red-400' 
               : 'text-white-400 hover:text-white'
           }`}
         >
-          {showRawData ? 'Hide Details' : 'Show Details'}
+          {isExpanded ? 'Hide Details' : 'Show Details'}
         </button>
       </div>
       
@@ -127,7 +142,7 @@ const LogEntry = ({ log, isNew }: { log: TransactionLog; isNew?: boolean }) => {
       )}
       
       {/* Show additional details when expanded */}
-      {showRawData && log.raw_response && (
+      {isExpanded && log.raw_response && (
         <div className="mt-3 pl-4 border-l-2 border-gray-700">
           {/* Message Type */}
           <div className="text-gray-400 mb-2">
@@ -160,12 +175,80 @@ const LogEntry = ({ log, isNew }: { log: TransactionLog; isNew?: boolean }) => {
 
 export default function LogsViewer() {
   const { logs, loading, error, refresh } = useLogs();
-  const [height, setHeight] = useState(300);
+  const [height, setHeight] = useState(120);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startY, setStartY] = useState(0);
+  const [startHeight, setStartHeight] = useState(120);
   const logsEndRef = useRef<HTMLDivElement>(null);
   const [showRawData, setShowRawData] = useState(false);
   const [lastUpdateTime, setLastUpdateTime] = useState<Date>(new Date());
   const [previousLogsLength, setPreviousLogsLength] = useState(0);
+  const [expandedLogs, setExpandedLogs] = useState<Set<string>>(new Set());
+
+  const toggleExpand = () => {
+    if (isExpanded) {
+      setHeight(120);
+      setIsExpanded(false);
+    } else {
+      setHeight(400);
+      setIsExpanded(true);
+    }
+  };
+
+  const startResizing = (mouseDownEvent: React.MouseEvent) => {
+    mouseDownEvent.preventDefault();
+    
+    const startY = mouseDownEvent.clientY;
+    const startHeight = height;
+
+    const onMouseMove = (mouseMoveEvent: MouseEvent) => {
+      const newHeight = Math.max(120, Math.min(window.innerHeight - 50, 
+        startHeight - (mouseMoveEvent.clientY - startY)
+      ));
+      setHeight(newHeight);
+      setIsExpanded(newHeight > 120);
+    };
+
+    const onMouseUp = () => {
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+    };
+
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+  };
+
+  const toggleLogDetails = (logId: string) => {
+    setExpandedLogs(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(logId)) {
+        newSet.delete(logId);
+      } else {
+        newSet.add(logId);
+      }
+      return newSet;
+    });
+  };
+
+  const renderError = (error: Error | string) => {
+    const errorMessage = error instanceof Error ? error.message : error;
+    return (
+      <div className="p-4">
+        <div className="text-red-400 font-mono">
+          <span className="text-yellow-400">[ERROR]</span> {errorMessage}
+        </div>
+        <div className="mt-2 text-gray-400 text-xs">
+          Please check:
+          <ul className="list-disc list-inside mt-1">
+            <li>API key configuration in environment variables</li>
+            <li>Network connectivity to DOBI Mantle</li>
+            <li>API key permissions and validity</li>
+          </ul>
+        </div>
+      </div>
+    );
+  };
 
   // Check for new logs and print them
   useEffect(() => {
@@ -192,63 +275,9 @@ export default function LogsViewer() {
     }
   }, [logs, previousLogsLength]);
 
-  // Handle click to expand/collapse
-  const toggleExpand = () => {
-    if (isExpanded) {
-      setHeight(120);
-      setIsExpanded(false);
-    } else {
-      setHeight(window.innerHeight * 0.7);
-      setIsExpanded(true);
-    }
-  };
-
-  // Handle drag to resize
-  const startResizing = (mouseDownEvent: React.MouseEvent) => {
-    mouseDownEvent.preventDefault();
-    
-    const startY = mouseDownEvent.clientY;
-    const startHeight = height;
-
-    const onMouseMove = (mouseMoveEvent: MouseEvent) => {
-      const newHeight = Math.max(120, Math.min(window.innerHeight - 50, 
-        startHeight - (mouseMoveEvent.clientY - startY)
-      ));
-      setHeight(newHeight);
-      setIsExpanded(newHeight > 120);
-    };
-
-    const onMouseUp = () => {
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
-    };
-
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
-  };
-
-  const renderError = (error: Error | string) => {
-    const errorMessage = error instanceof Error ? error.message : error;
-    return (
-      <div className="p-4">
-        <div className="text-red-400 font-mono">
-          <span className="text-yellow-400">[ERROR]</span> {errorMessage}
-        </div>
-        <div className="mt-2 text-gray-400 text-xs">
-          Please check:
-          <ul className="list-disc list-inside mt-1">
-            <li>API key configuration in environment variables</li>
-            <li>Network connectivity to DOBI Mantle</li>
-            <li>API key permissions and validity</li>
-          </ul>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div
-      className="fixed bottom-0 left-0 w-full bg-gray-900 text-white bg-opacity-40 backdrop-blur-sm border-t border-gray-700 flex flex-col transition-all duration-300 z-20"
+      className="fixed bottom-0 left-0 w-full bg-gray-900 text-white bg-opacity-40 backdrop-blur-sm border-t border-gray-700 flex flex-col transition-all duration-300 z-30"
       style={{ height: `${height}px` }}
     >
       <div

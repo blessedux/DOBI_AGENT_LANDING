@@ -21,6 +21,8 @@ import BubbleMap from "./BubbleMap";
 import { useTransition, animated } from "@react-spring/web";
 import GlassmorphismWindow from "./ui/GlassmorphismWindow";
 import Image from 'next/image';
+import { AnimatePresence, motion } from "framer-motion";
+import MilestoneChart from "./MilestoneChart";
 
 interface CustomNodeData {
   headerLabel: string;
@@ -132,7 +134,8 @@ const CustomNode = ({ data }: { data: CustomNodeData }) => {
 };
 
 interface DobiChartProps {
-  activeTab: "architecture" | "devices";
+  activeTab: string;
+  selectedDevice: Charger | null;
 }
 
 const nodeTypes: NodeTypes = {
@@ -158,7 +161,9 @@ export interface Charger {
   balance_total: number;
 }
 
-export default function DobiChart({ activeTab }: DobiChartProps) {
+const DobiChart: React.FC<DobiChartProps> = ({ activeTab, selectedDevice }) => {
+  console.log('DobiChart rendering with device:', selectedDevice?.id_charger);
+
   const [nodes, setNodes, onNodesChange] = useNodesState<CustomNodeData>(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   
@@ -175,51 +180,68 @@ export default function DobiChart({ activeTab }: DobiChartProps) {
   });
 
   return (
-    <div className="flex-1 relative">
-      <div className="relative w-full h-screen overflow-hidden touch-none">
-        <GlassmorphismWindow />
-        
-        {transitions((styles, tab) => (
-          <animated.div
-            style={{
-              ...styles,
-              position: "absolute",
-              width: "100%",
-              height: "100%",
-              visibility: tab === activeTab ? "visible" : "hidden",
-            }}
-          >
-            {tab === "architecture" ? (
-              <ReactFlow
-                nodes={nodes}
-                edges={edges}
-                onNodesChange={onNodesChange}
-                onEdgesChange={onEdgesChange}
-                onConnect={onConnect}
-                nodeTypes={nodeTypes}
-                edgeTypes={edgeTypes}
-                fitView
-                className="w-full h-full min-h-[500px] bg-transparent"
-              >
-                <Background 
-                  color="#2D4EC8" 
-                  gap={20} 
-                  size={1}
-                  style={{ opacity: 0.2 }}
+    <div className="relative w-full h-full">
+      {selectedDevice ? (
+        <div className="absolute inset-0 bg-white z-50">
+          <div className="p-4 border-b flex items-center justify-between">
+            <h2 className="text-xl font-semibold">Device Milestones</h2>
+            <button 
+              onClick={() => console.log('Selected device:', selectedDevice)}
+              className="px-4 py-2 bg-blue-500 text-white rounded"
+            >
+              Debug Device State
+            </button>
+          </div>
+          <MilestoneChart device={selectedDevice} />
+        </div>
+      ) : (
+        <div className="relative w-full h-screen overflow-hidden touch-none">
+          <GlassmorphismWindow />
+          
+          {transitions((styles, tab) => (
+            <animated.div
+              style={{
+                ...styles,
+                position: "absolute",
+                width: "100%",
+                height: "100%",
+                visibility: tab === activeTab ? "visible" : "hidden",
+              }}
+            >
+              {tab === "architecture" ? (
+                <ReactFlow
+                  nodes={nodes}
+                  edges={edges}
+                  onNodesChange={onNodesChange}
+                  onEdgesChange={onEdgesChange}
+                  onConnect={onConnect}
+                  nodeTypes={nodeTypes}
+                  edgeTypes={edgeTypes}
+                  fitView
+                  className="w-full h-full min-h-[500px] bg-transparent"
+                >
+                  <Background 
+                    color="#2D4EC8" 
+                    gap={20} 
+                    size={1}
+                    style={{ opacity: 0.2 }}
+                  />
+                  <Controls />
+                </ReactFlow>
+              ) : (
+                <BubbleMap 
+                  activeTab={activeTab}
+                  isOverlayVisible={true}
+                  selectedView={null}
+                  selectedChargerId={undefined}
                 />
-                <Controls />
-              </ReactFlow>
-            ) : (
-              <BubbleMap 
-                activeTab={activeTab}
-                isOverlayVisible={true}
-                selectedView={null}
-                selectedChargerId={undefined}
-              />
-            )}
-          </animated.div>
-        ))}
-      </div>
+              )}
+            </animated.div>
+          ))}
+        </div>
+      )}
     </div>
   );
-}
+};
+  
+export default DobiChart;

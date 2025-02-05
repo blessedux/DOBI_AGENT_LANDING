@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import BubbleMap from "./BubbleMap";
 import DobiChart, { Charger } from "./DobiChart";
 import DeviceWorkflow from "./DeviceWorkflow";
-import AgentSidebar from './AgentSidebar';
+import MilestoneChart from "./MilestoneChart";
 
 interface DashboardProps {
   activeTab: "architecture" | "devices";
@@ -18,10 +18,18 @@ const Dashboard: React.FC<DashboardProps> = ({
   selectedDevice,
   setSelectedDevice 
 }) => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
+  useEffect(() => {
+    console.log('Dashboard state:', { 
+      activeTab,
+      selectedDevice: selectedDevice?.id_charger 
+    });
+  }, [activeTab, selectedDevice]);
+
+  console.log('Dashboard selectedDevice:', selectedDevice); // Debug log
 
   return (
     <div className="flex-1 relative overflow-hidden">
+      {/* Base content with transitions */}
       <AnimatePresence mode="wait">
         <motion.div
           key={activeTab}
@@ -32,11 +40,13 @@ const Dashboard: React.FC<DashboardProps> = ({
           className="w-full h-full"
         >
           {activeTab === "architecture" ? (
-            <DobiChart activeTab={activeTab} />
+            <DobiChart 
+              activeTab={activeTab} 
+              selectedDevice={selectedDevice}
+            />
           ) : (
             <div className="relative w-full h-full">
-              {/* Main BubbleMap */}
-              <div className="relative z-20 flex-1 h-full min-h-[calc(100vh-64px)] bg-gradient-to-br from-gray-900 to-black">
+              <div className="w-full h-[calc(100vh-64px)] bg-gradient-to-br from-gray-900 to-black">
                 <BubbleMap 
                   selectedChargerId={selectedDevice?.id_charger} 
                   activeTab={activeTab}
@@ -44,37 +54,25 @@ const Dashboard: React.FC<DashboardProps> = ({
                   selectedView={null}
                 />
               </div>
-              
-              {/* Sidebar */}
-              <div className="relative z-30">
-                <AgentSidebar
-                  setSelectedDevice={setSelectedDevice}
-                  selectedDevice={selectedDevice}
-                  isSidebarOpen={isSidebarOpen}
-                  setIsSidebarOpen={setIsSidebarOpen}
-                />
-              </div>
-              
-              {/* Device Workflow overlay */}
-              <AnimatePresence>
-                {selectedDevice && (
-                  <motion.div 
-                    initial={{ opacity: 0, filter: "blur(10px)" }}
-                    animate={{ opacity: 1, filter: "blur(0px)" }}
-                    exit={{ opacity: 0, filter: "blur(10px)" }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute inset-0 top-[64px] bg-white z-40"
-                  >
-                    <DeviceWorkflow
-                      selectedDevice={selectedDevice}
-                      onClose={() => setSelectedDevice(null)}
-                    />
-                  </motion.div>
-                )}
-              </AnimatePresence>
             </div>
           )}
         </motion.div>
+      </AnimatePresence>
+
+      {/* Milestone Chart Overlay */}
+      <AnimatePresence>
+        {selectedDevice && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.3 }}
+            className="fixed top-[64px] left-0 right-0 bottom-0 z-[50] bg-white/95"
+          >
+         
+            <MilestoneChart device={selectedDevice} />
+          </motion.div>
+        )}
       </AnimatePresence>
     </div>
   );
