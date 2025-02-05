@@ -25,6 +25,13 @@ const Dashboard: React.FC<DashboardProps> = ({
     });
   }, [activeTab, selectedDevice]);
 
+  // Add effect to close milestone view when switching to architecture tab
+  useEffect(() => {
+    if (activeTab === "architecture") {
+      setSelectedDevice(null);
+    }
+  }, [activeTab, setSelectedDevice]);
+
   console.log('Dashboard selectedDevice:', selectedDevice); // Debug log
 
   return (
@@ -61,7 +68,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 
       {/* Milestone Chart Overlay */}
       <AnimatePresence>
-        {selectedDevice && (
+        {selectedDevice && activeTab === "devices" && (
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -69,7 +76,6 @@ const Dashboard: React.FC<DashboardProps> = ({
             transition={{ duration: 0.3 }}
             className="fixed top-[64px] left-0 right-0 bottom-0 z-[50] bg-white/95"
           >
-         
             <MilestoneChart device={selectedDevice} />
           </motion.div>
         )}

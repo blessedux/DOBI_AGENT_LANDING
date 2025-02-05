@@ -142,7 +142,12 @@ export default function Navbar({ activeTab, setActiveTab, isSidebarOpen = true }
           >
             {/* Modal Header */}
             <div className="p-4 border-b flex justify-between items-center">
-              <h2 className="text-lg font-semibold text-gray-900">Menu</h2>
+            <div className="flex items-center space-x-3">
+          <Link href="https://dobprotocol.com" className="flex items-center space-x-2">
+            <Image src="/icons/dobprotocol-logo.svg" alt="DOB Protocol" width={32} height={32} />
+            <span className="text-[#6B7280] font-medium">dob protocol</span>
+          </Link>
+        </div>
               <button
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="p-2 rounded-lg hover:bg-gray-100"
