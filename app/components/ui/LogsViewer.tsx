@@ -175,7 +175,7 @@ const LogEntry = ({ log, isNew }: { log: TransactionLog; isNew?: boolean }) => {
 
 export default function LogsViewer() {
   const { logs, loading, error, refresh } = useLogs();
-  const [height, setHeight] = useState(120);
+  const [height, setHeight] = useState(40);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [startY, setStartY] = useState(0);
@@ -188,7 +188,7 @@ export default function LogsViewer() {
 
   const toggleExpand = () => {
     if (isExpanded) {
-      setHeight(120);
+      setHeight(40);
       setIsExpanded(false);
     } else {
       setHeight(400);
