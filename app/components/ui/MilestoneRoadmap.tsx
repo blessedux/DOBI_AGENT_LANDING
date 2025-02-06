@@ -112,12 +112,25 @@ const MilestoneRoadmap: React.FC<MilestoneRoadmapProps> = ({ device }) => {
 
   // Pulsing animation logic
   const [pulsingMilestone, setPulsingMilestone] = useState(1)
+  const [isMobile, setIsMobile] = useState(false);
+
   useEffect(() => {
     const interval = setInterval(() => {
       setPulsingMilestone(current => (current === 10 ? 1 : current + 1))
     }, 2000)
     return () => clearInterval(interval)
   }, [])
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Track path animation completion
   const [isPathAnimationComplete, setIsPathAnimationComplete] = useState(false)
@@ -237,7 +250,8 @@ const MilestoneRoadmap: React.FC<MilestoneRoadmapProps> = ({ device }) => {
             transformOrigin: "center center",
             transition: isDragging ? "none" : "transform 0.1s ease-out",
             minWidth: "100vw",
-            margin: "40px 0"
+            margin: "40px 0",
+            marginLeft: typeof window !== 'undefined' && window.innerWidth < 768 ? "-80px" : "0"
           }}
         >
           {/* Path with animation */}
@@ -289,8 +303,16 @@ const MilestoneRoadmap: React.FC<MilestoneRoadmapProps> = ({ device }) => {
                   >
                     <motion.div
                       className="relative"
-                      onHoverStart={() => setActiveMilestone(milestone.id)}
-                      onHoverEnd={() => setActiveMilestone(null)}
+                      onHoverStart={() => !isMobile && setActiveMilestone(milestone.id)}
+                      onHoverEnd={() => !isMobile && setActiveMilestone(null)}
+                      onClick={() => {
+                        // Toggle on tap for mobile
+                        if (activeMilestone === milestone.id) {
+                          setActiveMilestone(null);
+                        } else {
+                          setActiveMilestone(milestone.id);
+                        }
+                      }}
                     >
                       {/* Bottom circle (small icon) */}
                       <motion.div
