@@ -101,11 +101,11 @@ const MilestoneRoadmap: React.FC<MilestoneRoadmapProps> = ({ device }) => {
   console.log('MilestoneRoadmap device:', device);
 
   const [activeMilestone, setActiveMilestone] = useState<number | null>(null)
-  const [scale, setScale] = useState(1)
+  const [scale, setScale] = useState(0.7)
   const containerRef = useRef<HTMLDivElement>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
-  const [position, setPosition] = useState({ x: 0, y: 0 })
+  const [position, setPosition] = useState({ x: 10, y: 0 })
 
   // Track viewport width for dynamic path scaling
   const [viewportWidth, setViewportWidth] = useState(0)
@@ -137,11 +137,7 @@ const MilestoneRoadmap: React.FC<MilestoneRoadmapProps> = ({ device }) => {
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault()
       // Only allow zooming in (negative deltaY means zoom in)
-      if (e.deltaY < 0) {
-        const delta = e.deltaY * 0.005
-        const newScale = Math.min(Math.max(scale + delta, 1), 2)
-        setScale(newScale)
-      }
+   
     }
 
     const container = containerRef.current
@@ -276,12 +272,12 @@ const MilestoneRoadmap: React.FC<MilestoneRoadmapProps> = ({ device }) => {
                     className="absolute"
                     initial={{ opacity: 0, scale: 0.5 }}
                     animate={{ 
-                      opacity: activeMilestone === null || activeMilestone === milestone.id ? 1 : 0,
+                      opacity: 1,
                       scale: 1 
                     }}
                     transition={{
                       duration: 0.6,
-                      delay: activeMilestone === null ? index * 0.15 : 0,
+                      delay: index * 0.15,
                       ease: "easeOut"
                     }}
                     style={{
@@ -302,11 +298,11 @@ const MilestoneRoadmap: React.FC<MilestoneRoadmapProps> = ({ device }) => {
                         initial={{ scale: 0.5, opacity: 0 }}
                         animate={{ 
                           scale: 1, 
-                          opacity: activeMilestone === null || activeMilestone === milestone.id ? 1 : 0 
+                          opacity: 1
                         }}
                         transition={{
                           duration: 0.4,
-                          delay: activeMilestone === null ? index * 0.15 + 0.2 : 0,
+                          delay: index * 0.15 + 0.2,
                           ease: "easeOut"
                         }}
                       >
@@ -393,7 +389,7 @@ const MilestoneRoadmap: React.FC<MilestoneRoadmapProps> = ({ device }) => {
                               ease: "easeOut",
                               delay: 0.2
                             }}
-                            className="absolute z-[35] bg-white rounded-lg shadow-lg p-4"
+                            className="absolute z-[45] bg-white rounded-lg shadow-lg p-4"
                             style={{
                               top: "-140px",
                               left: "80%",
@@ -431,7 +427,7 @@ const MilestoneRoadmap: React.FC<MilestoneRoadmapProps> = ({ device }) => {
                               ease: "easeOut",
                               delay: 0.2
                             }}
-                            className="absolute z-[35] bg-white rounded-lg shadow-lg p-4"
+                            className="absolute z-[45] bg-white rounded-lg shadow-lg p-4"
                             style={{
                               top: "-140px",
                               left: "20%",

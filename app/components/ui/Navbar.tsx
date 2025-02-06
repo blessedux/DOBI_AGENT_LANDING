@@ -34,29 +34,30 @@ export default function Navbar({ activeTab, setActiveTab, isSidebarOpen = true }
         <div className="hidden md:flex items-center space-x-8">
           <button 
             onClick={() => setActiveTab("architecture")}
-            className={`${
+            className={`px-4 py-2 rounded-lg transition-all duration-200 ${
               activeTab === "architecture" 
-                ? "text-[#4F46E5] font-medium" 
-                : "text-gray-600"
-            } hover:text-gray-900 transition-colors`}
+                ? "bg-white text-[#4F46E5] font-medium shadow-md border border-gray-100" 
+                : "text-gray-600 hover:bg-white hover:shadow-sm hover:border hover:border-gray-100"
+            }`}
           >
             Architecture
           </button>
           
           <button 
             onClick={() => setActiveTab("devices")}
-            className={`${
+            className={`px-4 py-2 rounded-lg transition-all duration-200 ${
               activeTab === "devices" 
-                ? "text-[#4F46E5] font-medium" 
-                : "text-gray-600"
-            } hover:text-gray-900 transition-colors`}
+                ? "bg-white text-[#4F46E5] font-medium shadow-md border border-gray-100" 
+                : "text-gray-600 hover:bg-white hover:shadow-sm hover:border hover:border-gray-100"
+            }`}
           >
             Devices
           </button>
           
           <Link 
             href="https://app.virtuals.io/virtuals/13315"
-            className="text-gray-600 hover:text-gray-900 transition-colors"
+            className="px-4 py-2 rounded-lg text-gray-600 transition-all duration-200
+              hover:bg-white hover:shadow-sm hover:border hover:border-gray-100"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -65,7 +66,8 @@ export default function Navbar({ activeTab, setActiveTab, isSidebarOpen = true }
           
           <Link 
             href="https://stake.dobprotocol.io"
-            className="text-gray-600 hover:text-gray-900 transition-colors"
+            className="px-4 py-2 rounded-lg text-gray-600 transition-all duration-200
+              hover:bg-white hover:shadow-sm hover:border hover:border-gray-100"
             target="_blank"
             rel="noopener noreferrer"
           >
