@@ -167,7 +167,7 @@ const MilestoneRoadmap: React.FC<MilestoneRoadmapProps> = ({ device }) => {
     return () => container.removeEventListener('wheel', handleWheel);
   }, [scale]);
 
-  // Add touch zoom handlers
+  // Update zoom handlers with better sensitivity
   useEffect(() => {
     let initialDistance = 0;
     let initialScale = scale;
@@ -190,7 +190,7 @@ const MilestoneRoadmap: React.FC<MilestoneRoadmapProps> = ({ device }) => {
           e.touches[0].pageY - e.touches[1].pageY
         );
         
-        const delta = (distance - initialDistance) * 0.01;
+        const delta = (distance - initialDistance) * 0.015; // Increased from 0.01
         const newScale = Math.min(Math.max(initialScale + delta, minScale), maxScale);
         setScale(newScale);
       }
@@ -208,12 +208,12 @@ const MilestoneRoadmap: React.FC<MilestoneRoadmapProps> = ({ device }) => {
     };
   }, [scale]);
 
-  // Update touch drag support
+  // Update drag handlers with improved sensitivity
   useEffect(() => {
     let startTouch = { x: 0, y: 0 };
     let startPos = { x: 0, y: 0 };
     let isActive = false;
-    let moveThreshold = 3; // Small threshold to differentiate between tap and drag
+    let moveThreshold = 1; // Reduced from 3 for more immediate response
 
     const handleTouchStart = (e: TouchEvent) => {
       if (e.touches.length === 1) {
@@ -228,17 +228,15 @@ const MilestoneRoadmap: React.FC<MilestoneRoadmapProps> = ({ device }) => {
       if (!isActive || e.touches.length !== 1) return;
 
       const touch = e.touches[0];
-      const deltaX = touch.clientX - startTouch.x;
-      const deltaY = touch.clientY - startTouch.y;
+      const deltaX = (touch.clientX - startTouch.x) * 1.2; // Added multiplier for more responsive movement
+      const deltaY = (touch.clientY - startTouch.y) * 1.2;
       const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
       if (distance > moveThreshold) {
         e.preventDefault();
-        requestAnimationFrame(() => {
-          setPosition({
-            x: startPos.x + deltaX,
-            y: startPos.y + deltaY
-          });
+        setPosition({
+          x: startPos.x + deltaX,
+          y: startPos.y + deltaY
         });
       }
     };
@@ -334,6 +332,21 @@ const MilestoneRoadmap: React.FC<MilestoneRoadmapProps> = ({ device }) => {
     return stretchedPath
   }
 
+  // Add this helper function to calculate center position
+  const centerOnMilestone = (milestoneId: number) => {
+    const point = getPointAtProgress(milestones.find(m => m.id === milestoneId)?.progress || 0);
+    if (containerRef.current) {
+      const containerWidth = containerRef.current.clientWidth;
+      const newX = -(point.x - containerWidth / 2);
+      
+      // Animate to new position
+      setPosition(prev => ({
+        ...prev,
+        x: newX
+      }));
+    }
+  };
+
   return (
     <div className="w-full flex items-center justify-center min-h-[500px] bg-white/60">
       <div
@@ -408,11 +421,13 @@ const MilestoneRoadmap: React.FC<MilestoneRoadmapProps> = ({ device }) => {
                       onHoverStart={() => !isMobile && setActiveMilestone(milestone.id)}
                       onHoverEnd={() => !isMobile && setActiveMilestone(null)}
                       onClick={() => {
-                        // Toggle on tap for mobile
-                        if (activeMilestone === milestone.id) {
-                          setActiveMilestone(null);
-                        } else {
-                          setActiveMilestone(milestone.id);
+                        if (isMobile) {
+                          if (activeMilestone === milestone.id) {
+                            setActiveMilestone(null);
+                          } else {
+                            setActiveMilestone(milestone.id);
+                            centerOnMilestone(milestone.id); // Add centering on activation
+                          }
                         }
                       }}
                     >
@@ -500,12 +515,18 @@ const MilestoneRoadmap: React.FC<MilestoneRoadmapProps> = ({ device }) => {
                           <motion.div
                             initial={{
                               opacity: 0,
-                              x: -24,
+                              ...(isMobile 
+                                ? { y: 100, x: -100 } // Start from below on mobile
+                                : { x: -24 }
+                              ),
                               scale: 0.9
                             }}
                             animate={{
                               opacity: 1,
-                              x: 24,
+                              ...(isMobile 
+                                ? { y: -70, x: -100 } // Move up on mobile
+                                : { x: 24 }
+                              ),
                               scale: 1
                             }}
                             transition={{
@@ -515,9 +536,19 @@ const MilestoneRoadmap: React.FC<MilestoneRoadmapProps> = ({ device }) => {
                             }}
                             className="absolute z-[25] bg-white rounded-lg shadow-lg p-4"
                             style={{
-                              top: "-140px",
-                              left: "80%",
-                              width: "200px",
+                              ...(isMobile 
+                                ? {
+                                    top: "-140px", // Position much higher for mobile
+                                    left: "50%",
+                                    transform: "translateX(-50%)",
+                                    width: "280px"
+                                  }
+                                : {
+                                    top: "-140px",
+                                    left: "80%",
+                                    width: "200px"
+                                  }
+                              ),
                               minHeight: "80px",
                               display: "flex",
                               flexDirection: "column",
@@ -538,12 +569,18 @@ const MilestoneRoadmap: React.FC<MilestoneRoadmapProps> = ({ device }) => {
                           <motion.div
                             initial={{
                               opacity: 0,
-                              x: 24,
+                              ...(isMobile 
+                                ? { y: 100, x: -100 } // Start from below on mobile
+                                : { x: 24 }
+                              ),
                               scale: 0.9
                             }}
                             animate={{
                               opacity: 1,
-                              x: -264,
+                              ...(isMobile 
+                                ? { y: -280, x: -100 } // Move up higher on mobile
+                                : { x: -264 }
+                              ),
                               scale: 1
                             }}
                             transition={{
@@ -553,9 +590,19 @@ const MilestoneRoadmap: React.FC<MilestoneRoadmapProps> = ({ device }) => {
                             }}
                             className="absolute z-[25] bg-white rounded-lg shadow-lg p-4"
                             style={{
-                              top: "-140px",
-                              left: "20%",
-                              width: "240px",
+                              ...(isMobile 
+                                ? {
+                                    top: "-140px", // Position much higher for mobile
+                                    left: "50%",
+                                    transform: "translateX(-50%)",
+                                    width: "280px"
+                                  }
+                                : {
+                                    top: "-140px",
+                                    left: "20%",
+                                    width: "240px"
+                                  }
+                              ),
                               height: "auto",
                               display: "flex",
                               flexDirection: "column",
