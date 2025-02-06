@@ -102,6 +102,8 @@ const MilestoneRoadmap: React.FC<MilestoneRoadmapProps> = ({ device }) => {
 
   const [activeMilestone, setActiveMilestone] = useState<number | null>(null)
   const [scale, setScale] = useState(0.7)
+  const minScale = 0.5
+  const maxScale = 1.2
   const containerRef = useRef<HTMLDivElement>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
@@ -148,17 +150,116 @@ const MilestoneRoadmap: React.FC<MilestoneRoadmapProps> = ({ device }) => {
   // Wheel zoom logic
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
-      e.preventDefault()
-      // Only allow zooming in (negative deltaY means zoom in)
-   
-    }
+      if (e.ctrlKey || e.metaKey) { // Check for pinch gesture on mobile
+        e.preventDefault();
+        const delta = -e.deltaY * 0.01;
+        setScale(prevScale => {
+          const newScale = prevScale + delta;
+          return Math.min(Math.max(newScale, minScale), maxScale);
+        });
+      }
+    };
 
-    const container = containerRef.current
-    if (!container) return
+    const container = containerRef.current;
+    if (!container) return;
 
-    container.addEventListener('wheel', handleWheel, { passive: false })
-    return () => container.removeEventListener('wheel', handleWheel)
-  }, [scale])
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    return () => container.removeEventListener('wheel', handleWheel);
+  }, [scale]);
+
+  // Add touch zoom handlers
+  useEffect(() => {
+    let initialDistance = 0;
+    let initialScale = scale;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        initialDistance = Math.hypot(
+          e.touches[0].pageX - e.touches[1].pageX,
+          e.touches[0].pageY - e.touches[1].pageY
+        );
+        initialScale = scale;
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        const distance = Math.hypot(
+          e.touches[0].pageX - e.touches[1].pageX,
+          e.touches[0].pageY - e.touches[1].pageY
+        );
+        
+        const delta = (distance - initialDistance) * 0.01;
+        const newScale = Math.min(Math.max(initialScale + delta, minScale), maxScale);
+        setScale(newScale);
+      }
+    };
+
+    const container = containerRef.current;
+    if (!container) return;
+
+    container.addEventListener('touchstart', handleTouchStart);
+    container.addEventListener('touchmove', handleTouchMove, { passive: false });
+    
+    return () => {
+      container.removeEventListener('touchstart', handleTouchStart);
+      container.removeEventListener('touchmove', handleTouchMove);
+    };
+  }, [scale]);
+
+  // Update touch drag support
+  useEffect(() => {
+    let startTouch = { x: 0, y: 0 };
+    let startPos = { x: 0, y: 0 };
+    let isActive = false;
+    let moveThreshold = 3; // Small threshold to differentiate between tap and drag
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        startTouch = { x: touch.clientX, y: touch.clientY };
+        startPos = { ...position };
+        isActive = true;
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isActive || e.touches.length !== 1) return;
+
+      const touch = e.touches[0];
+      const deltaX = touch.clientX - startTouch.x;
+      const deltaY = touch.clientY - startTouch.y;
+      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+      if (distance > moveThreshold) {
+        e.preventDefault();
+        requestAnimationFrame(() => {
+          setPosition({
+            x: startPos.x + deltaX,
+            y: startPos.y + deltaY
+          });
+        });
+      }
+    };
+
+    const handleTouchEnd = () => {
+      isActive = false;
+    };
+
+    const container = containerRef.current;
+    if (!container) return;
+
+    container.addEventListener('touchstart', handleTouchStart);
+    container.addEventListener('touchmove', handleTouchMove, { passive: false });
+    container.addEventListener('touchend', handleTouchEnd);
+    
+    return () => {
+      container.removeEventListener('touchstart', handleTouchStart);
+      container.removeEventListener('touchmove', handleTouchMove);
+      container.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [position]);
 
   // Handle drag start
   const handleDragStart = (e: React.MouseEvent) => {
@@ -272,6 +373,7 @@ const MilestoneRoadmap: React.FC<MilestoneRoadmapProps> = ({ device }) => {
               animate={{ pathLength: 1 }}
               transition={{ duration: 1.5, ease: "easeInOut" }}
               onAnimationComplete={() => setIsPathAnimationComplete(true)}
+              style={{ zIndex: 1 }}
             />
           </svg>
 
@@ -298,7 +400,7 @@ const MilestoneRoadmap: React.FC<MilestoneRoadmapProps> = ({ device }) => {
                       left: point.x,
                       top: point.y,
                       transform: "translate(-50%, -50%)",
-                      zIndex: 10
+                      zIndex: activeMilestone === milestone.id ? 50 : 10
                     }}
                   >
                     <motion.div
@@ -351,7 +453,7 @@ const MilestoneRoadmap: React.FC<MilestoneRoadmapProps> = ({ device }) => {
 
                       {/* Larger icon above (no background) */}
                       <div
-                        className="absolute left-1/2 z-[40]"
+                        className="absolute left-1/2 z-[35]"
                         style={{
                           transform: "translateX(calc(-37% - 10px))",
                           top: "-136px"
@@ -369,7 +471,7 @@ const MilestoneRoadmap: React.FC<MilestoneRoadmapProps> = ({ device }) => {
                             ease: "easeOut",
                             delay: activeMilestone === milestone.id ? 0.15 : 0
                           }}
-                          className="z-[40] flex items-center justify-center"
+                          className="z-[35] flex items-center justify-center"
                           style={{
                             top: "-136px",
                             transformOrigin: "center center",
@@ -411,7 +513,7 @@ const MilestoneRoadmap: React.FC<MilestoneRoadmapProps> = ({ device }) => {
                               ease: "easeOut",
                               delay: 0.2
                             }}
-                            className="absolute z-[45] bg-white rounded-lg shadow-lg p-4"
+                            className="absolute z-[25] bg-white rounded-lg shadow-lg p-4"
                             style={{
                               top: "-140px",
                               left: "80%",
@@ -449,7 +551,7 @@ const MilestoneRoadmap: React.FC<MilestoneRoadmapProps> = ({ device }) => {
                               ease: "easeOut",
                               delay: 0.2
                             }}
-                            className="absolute z-[45] bg-white rounded-lg shadow-lg p-4"
+                            className="absolute z-[25] bg-white rounded-lg shadow-lg p-4"
                             style={{
                               top: "-140px",
                               left: "20%",
