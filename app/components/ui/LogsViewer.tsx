@@ -46,6 +46,22 @@ const getStatusColor = (status: string | undefined) => {
   }
 };
 
+// Add this helper function
+const formatChargerLog = (log: TransactionLog) => {
+  if (log.txHash.startsWith('CHG-')) {
+    return {
+      ...log,
+      type: 'charger',
+      displayAmount: `$${parseFloat(log.amount).toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })}`,
+      displayStatus: log.status === 'active' ? 'Online' : 'Maintenance'
+    };
+  }
+  return log;
+};
+
 const LogEntry = ({ log, isNew }: { log: TransactionLog; isNew?: boolean }) => {
   const [showRawData, setShowRawData] = useState(false);
   const [expandedLogs, setExpandedLogs] = useState<Set<string>>(new Set());
@@ -298,13 +314,53 @@ export default function LogsViewer() {
         {error ? (
           renderError(error)
         ) : (
-          logs.map((log, index) => (
-            <LogEntry 
-              key={log.txHash || Math.random()} 
-              log={log} 
-              isNew={index >= previousLogsLength - 1}
-            />
-          ))
+          logs.map((log, index) => {
+            const formattedLog = formatChargerLog(log);
+            const isCharger = log.txHash.startsWith('CHG-');
+            
+            return (
+              <div key={log.txHash || Math.random()} 
+                className={`mb-2 p-2 rounded ${
+                  index >= previousLogsLength - 1 ? 'animate-highlight' : ''
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400">
+                    {formatTimestamp(log.timestamp)}
+                  </span>
+                  <span className={`px-2 py-0.5 rounded ${
+                    isCharger 
+                      ? log.status === 'active' 
+                        ? 'bg-green-500/20 text-green-400'
+                        : 'bg-yellow-500/20 text-yellow-400'
+                      : getStatusColor(log.status)
+                  }`}>
+                    {isCharger ? formattedLog.displayStatus : formatStatus(log.status)}
+                  </span>
+                </div>
+                
+                <div className="mt-1">
+                  <span className="text-gray-300">
+                    {isCharger ? 'Charger ID: ' : 'TX: '}
+                  </span>
+                  <span className="font-mono text-gray-400">
+                    {isCharger ? log.txHash.replace('CHG-', '') : log.txHash}
+                  </span>
+                </div>
+
+                <div className="mt-1">
+                  <span className="text-gray-300">
+                    {isCharger ? 'Balance: ' : 'Amount: '}
+                  </span>
+                  <span className="text-gray-200">
+                    {isCharger ? formattedLog.displayAmount : log.amount}
+                  </span>
+                </div>
+
+                {/* ... rest of the log entry ... */}
+              </div>
+            );
+          })
         )}
         <div ref={logsEndRef} />
       </div>

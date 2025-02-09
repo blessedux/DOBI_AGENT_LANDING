@@ -61,24 +61,6 @@ if (mockLogs.length === 0) {
   }
 }
 
-/**
- * POST /api/logs
- * 
- * Endpoint to receive new transaction logs from smart contracts
- * 
- * Headers Required:
- * - x-api-key: Your API key for authentication
- * 
- * Example Request Body:
- * {
- *   "sender": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
- *   "amount": "0.5",
- *   "txHash": "0x123...abc",
- *   "timestamp": "2024-02-20T15:30:00Z",
- *   "status": "completed",
- *   "network": "mantle-testnet"
- * }
- */
 export async function POST(request: Request) {
   console.log('POST request received');  // Debug log
   
@@ -156,20 +138,57 @@ export async function POST(request: Request) {
  */
 export async function GET() {
   try {
-    const response = await fetch('https://dobi-mantle.dobprotocol.com/api/logs', {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${env.API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-    });
+    // Fetch both logs and chargers
+    const [logsResponse, chargersResponse] = await Promise.all([
+      fetch('https://dobi-mantle.dobprotocol.com/api/logs', {
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${env.API_KEY}`,
+        },
+      }),
+      fetch('https://dobi-mantle.dobprotocol.com/api/chargers', {
+        headers: {
+          'Accept': 'application/json',
+        },
+      })
+    ]);
 
-    const rawData = await response.json();
-    console.log('Raw API Response:', rawData);
+    const rawLogs = await logsResponse.json();
+    const chargers = await chargersResponse.json();
+
+    // Transform charger data into log format
+    const chargerLogs = chargers.map((charger: any) => ({
+      timestamp: charger.creation_date,
+      network: "Mantle",
+      status: charger.status,
+      txHash: `CHG-${charger.id_charger}`,
+      sender: charger.company_owner,
+      amount: charger.balance_total.toString(),
+      raw_response: {
+        message: `Charger ${charger.name} transaction`,
+        data: {
+          status: charger.status,
+          think_process: `
+<THINK>
+1. Analyzing charger data...
+2. Location: ${charger.location.address}
+3. Performance metrics:
+   - Transactions: ${charger.transactions}
+   - Income: $${charger.income_generated}
+   - Costs: $${charger.cost_generated}
+   - Balance: $${charger.balance_total}
+4. Status: ${charger.status}
+5. Model: ${charger.model}
+</THINK>`,
+          "contract address": charger.id_charger,
+          agent: "DOBI_v1",
+          target: charger.location.address,
+        }
+      }
+    }));
 
     // Handle both single and multiple log entries
-    const logsToProcess = Array.isArray(rawData) ? rawData : [rawData];
+    const logsToProcess = Array.isArray(rawLogs) ? rawLogs : [rawLogs];
     
     // Transform each log entry
     const transformedLogs = logsToProcess.map(log => ({
@@ -202,7 +221,13 @@ export async function GET() {
     );
 
     console.log('Transformed Logs:', uniqueLogs);
-    return NextResponse.json(uniqueLogs);
+
+    // Combine and sort all logs by timestamp
+    const allLogs = [...chargerLogs, ...uniqueLogs].sort((a, b) => 
+      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+
+    return NextResponse.json(allLogs);
 
   } catch (error) {
     console.error('Logs API Error:', error);
