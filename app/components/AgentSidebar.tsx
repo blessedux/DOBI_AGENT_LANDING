@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Badge } from "./ui/Badge";
 import { ScrollArea } from "./ui/ScrollArea";
 import { 
@@ -12,6 +12,7 @@ import {
 } from "lucide-react"; 
 import { Charger } from "./DobiChart";
 import Image from 'next/image';
+import { motion } from "framer-motion";
 
 const chargers = [
   {
@@ -119,13 +120,15 @@ interface AgentSidebarProps {
   selectedDevice: Charger | null;
   isSidebarOpen: boolean;
   setIsSidebarOpen: (open: boolean) => void;
+  hoveredDeviceId: string | null;
 }
 
 const AgentSidebar: React.FC<AgentSidebarProps> = ({ 
   isSidebarOpen, 
   setIsSidebarOpen,
   selectedDevice,
-  setSelectedDevice 
+  setSelectedDevice,
+  hoveredDeviceId,
 }) => {
   const handleChevronClick = () => {
     if (selectedDevice) {
@@ -134,6 +137,8 @@ const AgentSidebar: React.FC<AgentSidebarProps> = ({
       setIsSidebarOpen(!isSidebarOpen);
     }
   };
+
+  const hoveredDevice = chargers.find(charger => charger.id_charger === hoveredDeviceId);
 
   return (
     <div className={`fixed right-0 top-[64px] bottom-0 bg-white/90 backdrop-blur-md shadow-lg z-[60] 
@@ -218,6 +223,32 @@ const AgentSidebar: React.FC<AgentSidebarProps> = ({
               )}
             </button>
           ))}
+
+          {hoveredDevice && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              className="absolute top-0 left-0 w-full p-4 bg-white shadow-lg rounded-lg"
+            >
+              <h3 className="font-medium text-gray-900">{hoveredDevice.name}</h3>
+              <div className="flex items-center gap-1 text-xs text-gray-500">
+                <span>{hoveredDevice.model}</span>
+                <span>•</span>
+                <span>{hoveredDevice.location.address}</span>
+              </div>
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                <div className="bg-[#F9FAFE] p-2 rounded-lg">
+                  <p className="text-xs text-[#2D4EC8] font-medium opacity-40">Transactions</p>
+                  <p className="text-lg font-semibold opacity-60">{hoveredDevice.transactions}</p>
+                </div>
+                <div className="bg-[#F9FAFE] p-2 rounded-lg">
+                  <p className="text-xs text-[#2D4EC8] font-medium opacity-40">Balance</p>
+                  <p className="text-lg font-semibold opacity-60">${hoveredDevice.balance_total.toLocaleString()}</p>
+                </div>
+              </div>
+            </motion.div>
+          )}
         </div>
       </div>
     </div>

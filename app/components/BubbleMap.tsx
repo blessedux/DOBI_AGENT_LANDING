@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import ReactFlow, {
   Background,
@@ -21,10 +21,15 @@ interface BubbleMapProps {
   activeTab: string;
   isOverlayVisible: boolean;
   selectedView: string | null;
+  onHoverDevice: (deviceId: string | null) => void;
 }
 
 const CustomNode = ({ data }: { data: any }) => (
-  <div className="w-24 h-24 rounded-full flex items-center justify-center">
+  <div
+    className="w-24 h-24 rounded-full flex items-center justify-center"
+    onMouseEnter={() => data.onHover(data.id)}
+    onMouseLeave={() => data.onHover(null)}
+  >
     <Handle
       type="target"
       position={Position.Top}
@@ -205,6 +210,7 @@ const BubbleMap: React.FC<BubbleMapProps> = ({
   activeTab,
   isOverlayVisible,
   selectedView,
+  onHoverDevice,
 }) => {
   const [nodes, setNodes] = React.useState<Node[]>(initialNodes);
   const [edges, setEdges] = React.useState<Edge[]>(initialEdges);
@@ -232,7 +238,10 @@ const BubbleMap: React.FC<BubbleMapProps> = ({
       <ReactFlowProvider>
         <div className="absolute inset-0" style={{ zIndex: 10 }}>
           <ReactFlow
-            nodes={nodes}
+            nodes={nodes.map(node => ({
+              ...node,
+              data: { ...node.data, onHover: onHoverDevice }
+            }))}
             edges={edges}
             nodeTypes={nodeTypes}
             onNodeDrag={onNodeDrag}
