@@ -25,7 +25,11 @@ interface BubbleMapProps {
 
 const CustomNode = ({ data }: { data: any }) => (
   <div className="w-24 h-24 rounded-full flex items-center justify-center">
-    <Handle type="target" position={Position.Left} style={{ visibility: 'hidden' }} />
+    <Handle
+      type="target"
+      position={Position.Top}
+      style={{ visibility: 'hidden', top: '50%', transform: 'translateY(-50%)' }}
+    />
     <Image
       src="/icons/zap_icon.png"
       alt="Device"
@@ -33,15 +37,27 @@ const CustomNode = ({ data }: { data: any }) => (
       objectFit="cover"
       className="rounded-full"
     />
-    <Handle type="source" position={Position.Right} style={{ visibility: 'hidden' }} />
+    <Handle
+      type="source"
+      position={Position.Bottom}
+      style={{ visibility: 'hidden', bottom: '50%', transform: 'translateY(50%)' }}
+    />
   </div>
 );
 
 const BubbleLayoutNode = () => (
   <div className="relative w-32 h-32 bg-white rounded-full flex items-center justify-center">
-    <Handle type="source" position={Position.Left} style={{ visibility: 'hidden' }} />
+    <Handle
+      type="source"
+      position={Position.Top}
+      style={{ visibility: 'hidden', top: '50%', transform: 'translateY(-50%)' }}
+    />
     <img src="/icons/dobi-icon.png" alt="Dobi" className="w-28 h-28 rounded-full" />
-    <Handle type="target" position={Position.Right} style={{ visibility: 'hidden' }} />
+    <Handle
+      type="target"
+      position={Position.Bottom}
+      style={{ visibility: 'hidden', bottom: '50%', transform: 'translateY(50%)' }}
+    />
   </div>
 );
 
