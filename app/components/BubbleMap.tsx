@@ -9,6 +9,8 @@ import ReactFlow, {
   Node,
   Edge,
   MarkerType,
+  Handle,
+  Position,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import Image from 'next/image';
@@ -21,33 +23,46 @@ interface BubbleMapProps {
   selectedView: string | null;
 }
 
+const CustomNode = ({ data }: { data: any }) => (
+  <div className="w-24 h-24 rounded-full flex items-center justify-center">
+    <Handle type="target" position={Position.Left} style={{ visibility: 'hidden' }} />
+    <Image
+      src="/icons/zap_icon.png"
+      alt="Device"
+      layout="fill"
+      objectFit="cover"
+      className="rounded-full"
+    />
+    <Handle type="source" position={Position.Right} style={{ visibility: 'hidden' }} />
+  </div>
+);
+
+const BubbleLayoutNode = () => (
+  <div className="relative w-32 h-32 bg-white rounded-full flex items-center justify-center">
+    <Handle type="source" position={Position.Left} style={{ visibility: 'hidden' }} />
+    <img src="/icons/dobi-icon.png" alt="Dobi" className="w-28 h-28 rounded-full" />
+    <Handle type="target" position={Position.Right} style={{ visibility: 'hidden' }} />
+  </div>
+);
+
+const nodeTypes = {
+  bubbleLayout: BubbleLayoutNode,
+  customNode: CustomNode,
+};
+
 // Custom Device Node Component
 const DeviceNode = ({ data }: { data: any }) => {
   return (
-    <div className="w-16 h-16 rounded-full flex items-center justify-center cursor-pointer">
+    <div className="w-24 h-24 rounded-full flex items-center justify-center cursor-pointer">
       <Image
         src="/icons/zap_icon.png"
         alt="Device"
-        width={64}
-        height={64}
+        width={80}
+        height={80}
         className="w-full h-full"
       />
     </div>
   );
-};
-
-// Custom Node Component for the central node
-const BubbleLayoutNode = () => {
-  return (
-    <div className="relative w-24 h-24 bg-white rounded-full flex items-center justify-center">
-      <img src="/icons/dobi-icon.png" alt="Dobi" className="w-16 h-16" />
-    </div>
-  );
-};
-
-const nodeTypes = {
-  bubbleLayout: BubbleLayoutNode,
-  device: DeviceNode,
 };
 
 // Initial nodes setup with multiple devices
@@ -55,55 +70,55 @@ const initialNodes: Node[] = [
   {
     id: 'central',
     type: 'bubbleLayout',
-    position: { x: 400, y: 300 },
+    position: { x: 400, y: 400 },
     data: {},
     draggable: false,
   },
   {
     id: 'device-1',
-    type: 'device',
+    type: 'customNode',
     position: { x: 600, y: 200 },
     data: { label: 'Device 1' },
     draggable: true,
   },
   {
     id: 'device-2',
-    type: 'device',
+    type: 'customNode',
     position: { x: 600, y: 300 },
     data: { label: 'Device 2' },
     draggable: true,
   },
   {
     id: 'device-3',
-    type: 'device',
+    type: 'customNode',
     position: { x: 600, y: 400 },
     data: { label: 'Device 3' },
     draggable: true,
   },
   {
     id: 'device-4',
-    type: 'device',
+    type: 'customNode',
     position: { x: 200, y: 200 },
     data: { label: 'Device 4' },
     draggable: true,
   },
   {
     id: 'device-5',
-    type: 'device',
+    type: 'customNode',
     position: { x: 200, y: 300 },
     data: { label: 'Device 5' },
     draggable: true,
   },
   {
     id: 'device-6',
-    type: 'device',
+    type: 'customNode',
     position: { x: 200, y: 400 },
     data: { label: 'Device 6' },
     draggable: true,
   },
   {
     id: 'device-7',
-    type: 'device',
+    type: 'customNode',
     position: { x: 200, y: 500 },
     data: { label: 'Device 7' },
     draggable: true,
@@ -113,66 +128,59 @@ const initialNodes: Node[] = [
 // Simplified and enhanced edge styles for better visibility
 const edgeStyles = {
   stroke: '#ffffff',
-  strokeWidth: 4,
+  strokeWidth: 2,
 };
 
 // Initial edges connecting all devices to central node
 const initialEdges: Edge[] = [
   {
-    id: 'edge-1',
+    id: 'e1',
     source: 'central',
     target: 'device-1',
-    type: 'straight',    // Using 'straight' for diagonal lines
+    animated: true,
     style: edgeStyles,
-    animated: true,     // Re-enable animation
   },
   {
-    id: 'edge-2',
+    id: 'e2',
     source: 'central',
     target: 'device-2',
-    type: 'straight',
-    style: edgeStyles,
     animated: true,
+    style: edgeStyles,
   },
   {
-    id: 'edge-3',
+    id: 'e3',
     source: 'central',
     target: 'device-3',
-    type: 'straight',
-    style: edgeStyles,
     animated: true,
+    style: edgeStyles,
   },
   {
-    id: 'edge-4',
+    id: 'e4',
     source: 'central',
     target: 'device-4',
-    type: 'straight',
-    style: edgeStyles,
     animated: true,
+    style: edgeStyles,
   },
   {
-    id: 'edge-5',
+    id: 'e5',
     source: 'central',
     target: 'device-5',
-    type: 'straight',
-    style: edgeStyles,
     animated: true,
+    style: edgeStyles,
   },
   {
-    id: 'edge-6',
+    id: 'e6',
     source: 'central',
     target: 'device-6',
-    type: 'straight',
-    style: edgeStyles,
     animated: true,
+    style: edgeStyles,
   },
   {
-    id: 'edge-7',
+    id: 'e7',
     source: 'central',
     target: 'device-7',
-    type: 'straight',
-    style: edgeStyles,
     animated: true,
+    style: edgeStyles,
   },
 ];
 
