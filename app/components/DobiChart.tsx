@@ -22,7 +22,6 @@ import { useTransition, animated } from "@react-spring/web";
 import GlassmorphismWindow from "./ui/GlassmorphismWindow";
 import Image from 'next/image';
 import { AnimatePresence, motion } from "framer-motion";
-import MilestoneChart from "./MilestoneChart";
 
 interface CustomNodeData {
   headerLabel: string;
