@@ -22,6 +22,7 @@ import { useTransition, animated } from "@react-spring/web";
 import GlassmorphismWindow from "./ui/GlassmorphismWindow";
 import Image from 'next/image';
 import { AnimatePresence, motion } from "framer-motion";
+import DeviceWorkflow from "./DeviceWorkflow";
 
 interface CustomNodeData {
   headerLabel: string;
@@ -181,7 +182,13 @@ const DobiChart: React.FC<DobiChartProps> = ({ activeTab, selectedDevice }) => {
   return (
     <div className="relative w-full h-full">
       {selectedDevice ? (
-        <div className="absolute inset-0 bg-white z-50">
+        <motion.div 
+          className="absolute inset-0 bg-white z-50"
+          initial={{ opacity: 0, filter: "blur(10px)" }}
+          animate={{ opacity: 1, filter: "blur(0px)" }}
+          exit={{ opacity: 0, filter: "blur(10px)" }}
+          transition={{ duration: 0.3 }}
+        >
           <div className="p-4 border-b flex items-center justify-between">
             <h2 className="text-xl font-semibold">Device Milestones</h2>
             <button 
@@ -191,8 +198,11 @@ const DobiChart: React.FC<DobiChartProps> = ({ activeTab, selectedDevice }) => {
               Debug Device State
             </button>
           </div>
-          <MilestoneChart device={selectedDevice} />
-        </div>
+          <DeviceWorkflow 
+            selectedDevice={selectedDevice} 
+            onClose={() => setSelectedDevice(null)}
+          />
+        </motion.div>
       ) : (
         <div className="relative w-full h-screen overflow-hidden touch-none">
           <GlassmorphismWindow />
