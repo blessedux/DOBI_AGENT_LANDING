@@ -48,7 +48,15 @@ const nextConfig = {
   },
   // Enable image domains if you're using next/image
   images: {
-    domains: ['your-image-domain.com'], // Add your image domains here
+    domains: ['your-domain.com'],
+    // Add a remotePatterns entry if needed
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'your-domain.com',
+        pathname: '/icons/**',
+      },
+    ],
   },
   // Add webpack config if needed
   webpack: (config, { isServer }) => {

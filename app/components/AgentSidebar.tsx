@@ -183,15 +183,15 @@ const AgentSidebar: React.FC<AgentSidebarProps> = ({
                 <div className="relative">
                   <div className="w-12 h-12 rounded-full bg-[#E8EDFF] flex items-center justify-center overflow-hidden">
                     <Image 
-                      src={index >= 4 ? "/icons/Zap_Icon2.png" : "/icons/Zap_Icon.png"}
+                      src={index >= 4 ? "/icons/zap_icon2.png" : "/icons/zap_icon.png"}
                       alt="Zap Icon"
                       width={48}
                       height={48}
                       className="w-8 h-8 object-contain"
                       style={{ 
                         transform: index >= 4 
-                          ? 'scale(2.0)'  // Less zoom for Zap_Icon2
-                          : 'translateY(3px) translateX(5px) scale(3.5)'  // Keep original transform for Zap_Icon
+                          ? 'scale(2.0)'
+                          : 'translateY(3px) translateX(5px) scale(3.5)'
                       }}
                     />
                   </div>
