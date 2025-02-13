@@ -7,25 +7,33 @@ interface AnimatedCardProps {
   title: string;
   model: string;
   step?: number;
+  isMobile?: boolean;
 }
 
 const AnimatedCard: React.FC<AnimatedCardProps> = ({ 
   title, 
   model,
-  step 
+  step,
+  isMobile 
 }) => {
-  const [isMobile, setIsMobile] = useState(false);
+  const [screenSize, setScreenSize] = useState({
+    isMobile: false,
+    isSmallMobile: false
+  });
   const [cardHeight, setCardHeight] = useState(0);
   const primaryCardRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+    const checkScreenSize = () => {
+      setScreenSize({
+        isMobile: window.innerWidth < 768,
+        isSmallMobile: window.innerWidth < 480
+      });
     };
     
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
   // Update card height when content changes
@@ -59,6 +67,45 @@ const AnimatedCard: React.FC<AnimatedCardProps> = ({
     }
   };
 
+  // Calculate dynamic positions and sizes based on screen size
+  const getPrimaryCardStyle = () => {
+    if (screenSize.isSmallMobile) {
+      return {
+        width: '260px',
+        top: '30vh',
+        left: '10%',
+        transform: 'translateX(-50%)',
+        zIndex: 50
+      };
+    }
+    if (screenSize.isMobile) {
+      return {
+        width: '280px',
+        top: '30vh',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        zIndex: 50
+      };
+    }
+    return {
+      width: '280px',
+      top: '200px',
+      left: '15vw',
+      zIndex: 50
+    };
+  };
+
+  const getSecondaryCardStyle = () => {
+    const baseTop = screenSize.isSmallMobile ? '30vh' : (screenSize.isMobile ? '25vh' : '200px');
+    return {
+      width: screenSize.isSmallMobile ? '260px' : '280px',
+      top: `calc(${baseTop} + ${cardHeight}px + ${screenSize.isSmallMobile ? '10px' : '20px'})`,
+      left: screenSize.isMobile ? '10%' : '15vw',
+      transform: screenSize.isMobile ? 'translateX(-50%)' : 'none',
+      zIndex: 50
+    };
+  };
+
   return (
     <>
       {/* Primary Card */}
@@ -67,12 +114,8 @@ const AnimatedCard: React.FC<AnimatedCardProps> = ({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 10 }}
-        className="fixed w-[280px] p-4 bg-white shadow-lg rounded-lg"
-        style={{
-          top: isMobile ? '40vh' : '200px',
-          left: '15vw',
-          zIndex: 50
-        }}
+        className={`fixed p-4 bg-white shadow-lg rounded-lg animated-card`}
+        style={getPrimaryCardStyle()}
       >
         {/* Step indicator */}
         <div className="flex items-center gap-2 mb-1">
@@ -113,17 +156,13 @@ const AnimatedCard: React.FC<AnimatedCardProps> = ({
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -10 }}
         transition={{ delay: 0.2 }}
-        className="fixed w-[280px] p-4 bg-white shadow-lg rounded-lg"
-        style={{
-          top: isMobile 
-            ? `calc(40vh + ${cardHeight}px + 20px)` 
-            : `calc(200px + ${cardHeight}px + 20px)`,
-          left: '15vw',
-          zIndex: 50
-        }}
+        className={`fixed p-4 bg-white shadow-lg rounded-lg animated-card`}
+        style={getSecondaryCardStyle()}
       >
         <div className="text-xs text-gray-500">
-          <p className="text-xs leading-relaxed mb-3">
+          <p className={`text-xs leading-relaxed mb-3 ${
+            screenSize.isSmallMobile ? 'line-clamp-4' : ''
+          }`}>
             {step && getDetailedDescription(step)}
           </p>
         </div>

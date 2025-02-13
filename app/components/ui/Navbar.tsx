@@ -65,7 +65,7 @@ export default function Navbar({ activeTab, setActiveTab, isSidebarOpen = true }
           </Link>
           
           <Link 
-            href="https://stake.dobprotocol.io"
+            href="https://dobi-stake.dobprotocol.com"
             className="px-4 py-2 rounded-lg text-gray-600 transition-all duration-200
               hover:bg-white hover:shadow-sm hover:border hover:border-gray-100"
             target="_blank"

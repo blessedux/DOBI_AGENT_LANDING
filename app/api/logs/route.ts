@@ -138,102 +138,41 @@ export async function POST(request: Request) {
  */
 export async function GET() {
   try {
-    // Fetch both logs and chargers
-    const [logsResponse, chargersResponse] = await Promise.all([
-      fetch('https://dobi-mantle.dobprotocol.com/api/logs', {
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${env.API_KEY}`,
-        },
-      }),
-      fetch('https://dobi-mantle.dobprotocol.com/api/chargers', {
-        headers: {
-          'Accept': 'application/json',
-        },
-      })
-    ]);
+    const response = await fetch('https://dobi-mantle.dobprotocol.com/api/chargers', {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      cache: 'no-store',
+    });
 
-    const rawLogs = await logsResponse.json();
-    const chargers = await chargersResponse.json();
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
 
-    // Transform charger data into log format
-    const chargerLogs = chargers.map((charger: any) => ({
-      timestamp: charger.creation_date,
-      network: "Mantle",
-      status: charger.status,
-      txHash: `CHG-${charger.id_charger}`,
-      sender: charger.company_owner,
-      amount: charger.balance_total.toString(),
-      raw_response: {
-        message: `Charger ${charger.name} transaction`,
-        data: {
-          status: charger.status,
-          think_process: `
-<THINK>
-1. Analyzing charger data...
-2. Location: ${charger.location.address}
-3. Performance metrics:
-   - Transactions: ${charger.transactions}
-   - Income: $${charger.income_generated}
-   - Costs: $${charger.cost_generated}
-   - Balance: $${charger.balance_total}
-4. Status: ${charger.status}
-5. Model: ${charger.model}
-</THINK>`,
-          "contract address": charger.id_charger,
-          agent: "DOBI_v1",
-          target: charger.location.address,
-        }
-      }
-    }));
-
-    // Handle both single and multiple log entries
-    const logsToProcess = Array.isArray(rawLogs) ? rawLogs : [rawLogs];
+    const data = await response.json();
     
-    // Transform each log entry
-    const transformedLogs = logsToProcess.map(log => ({
-      sender: log.data?.["contract address"] || "unknown",
-      amount: log.data?.amount || "0",
-      txHash: log.data?.tx_hash || `0x${Math.random().toString(16).substring(2, 14)}`,
-      timestamp: new Date().toISOString(),
-      status: log.data?.status === "Only 15 blocks passed; waiting for at least 20 blocks." 
-        ? "pending" 
-        : "completed",
-      network: "Mantle",
-      raw_response: {
-        message: log.message || "Unknown message",
-        data: {
-          raw_response: log.data?.raw_response || "",
-          final_decision: log.data?.final_decision || "",
-          "contract address": log.data?.["contract address"] || "",
-          status: log.data?.status || "",
-          think_process: log.data?.raw_response || "",
-          agent: log.data?.agent || "",
-          target: log.data?.target || "",
-          tx_hash: log.data?.tx_hash || ""
-        }
-      }
-    }));
+    // Transform charger data into log format with simulated value changes
+    const transformedLogs = data.map((charger: any) => {
+      // Add small random variations to balance (±2%)
+      const variation = charger.balance_total * (Math.random() * 0.04 - 0.02);
+      const updatedBalance = charger.balance_total + variation;
 
-    // Keep only unique logs based on txHash
-    const uniqueLogs = Array.from(
-      new Map(transformedLogs.map(log => [log.txHash, log])).values()
-    );
+      return {
+        txHash: `CHG-${charger.id_charger}`,
+        timestamp: new Date().toISOString(),
+        status: charger.status || 'active',
+        amount: updatedBalance.toString(),
+        network: 'mantle',
+        balance_total: updatedBalance,
+        income_generated: charger.income_generated + (variation > 0 ? variation : 0),
+        cost_generated: charger.cost_generated + (variation < 0 ? Math.abs(variation) : 0)
+      };
+    });
 
-    console.log('Transformed Logs:', uniqueLogs);
-
-    // Combine and sort all logs by timestamp
-    const allLogs = [...chargerLogs, ...uniqueLogs].sort((a, b) => 
-      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-    );
-
-    return NextResponse.json(allLogs);
-
+    return NextResponse.json(transformedLogs);
   } catch (error) {
-    console.error('Logs API Error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch logs' },
-      { status: 500 }
-    );
+    console.error('API route error:', error);
+    return NextResponse.json({ error: 'Failed to fetch data' }, { status: 500 });
   }
 } 

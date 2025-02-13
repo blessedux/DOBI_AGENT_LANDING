@@ -145,6 +145,7 @@ const nodeStyles = {
 interface CustomNodeProps {
   data: NodeData & {
     onHover: (milestone: MilestoneData | null) => void;
+    isMobile: boolean;
   };
 }
 
@@ -180,6 +181,18 @@ const DeviceWorkflow: React.FC<DeviceWorkflowProps> = ({
 }) => {
   const [hoveredMilestone, setHoveredMilestone] = useState<MilestoneData | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+
+  // Add handler for background tap
+  const handleBackgroundTap = (event: React.MouseEvent) => {
+    // Only handle taps on mobile
+    if (!isMobile) return;
+
+    // Check if the click was on the background (not on the card)
+    const target = event.target as HTMLElement;
+    if (!target.closest('.animated-card')) {
+      setHoveredMilestone(null);
+    }
+  };
 
   useEffect(() => {
     const checkMobile = () => {
@@ -335,7 +348,10 @@ const DeviceWorkflow: React.FC<DeviceWorkflowProps> = ({
       </div>
 
       {/* Frosty Glass Overlay */}
-      <div className="absolute inset-0 bg-white/70 backdrop-blur-md z-10">
+      <div 
+        className="absolute inset-0 bg-white/70 backdrop-blur-md z-10"
+        onClick={handleBackgroundTap}  // Add click handler here
+      >
         {/* Header */}
         <div className="flex justify-between items-center mb-6 p-4">
           <h2 className="text-xl font-semibold">
@@ -353,7 +369,9 @@ const DeviceWorkflow: React.FC<DeviceWorkflowProps> = ({
 
         {/* React Flow Chart */}
         <ReactFlowProvider>
-          <div className={`h-[calc(100vh-200px)] w-full ${isMobile ? 'overflow-y-auto' : ''}`}>
+          <div 
+            className={`h-[calc(100vh-200px)] w-full ${isMobile ? 'overflow-y-auto' : ''}`}
+          >
             <ReactFlow 
               nodes={nodes.map((node, index) => ({
                 ...node,
@@ -361,7 +379,8 @@ const DeviceWorkflow: React.FC<DeviceWorkflowProps> = ({
                 position: positions[index],
                 data: {
                   ...node.data,
-                  onHover: setHoveredMilestone
+                  onHover: setHoveredMilestone,
+                  isMobile // Pass isMobile to nodes
                 }
               }))}
               edges={edges}
@@ -379,6 +398,7 @@ const DeviceWorkflow: React.FC<DeviceWorkflowProps> = ({
             title={hoveredMilestone.title}
             model={hoveredMilestone.model}
             step={hoveredMilestone.step}
+            isMobile={isMobile}  // Pass isMobile prop
           />
         )}
       </div>

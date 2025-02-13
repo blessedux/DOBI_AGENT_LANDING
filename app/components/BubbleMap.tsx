@@ -37,9 +37,14 @@ const CustomNode = ({ data }: { data: any }) => {
     }
   };
 
+  // Determine if this is a zap_icon2 node
+  const isZapIcon2 = data.imageSrc?.includes('zap_icon2');
+
   return (
     <div
-      className="w-24 h-24 rounded-full flex items-center justify-center"
+      className={`rounded-full flex items-center justify-center ${
+        isZapIcon2 ? 'w-12 h-12' : 'w-24 h-24'
+      }`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
@@ -51,8 +56,8 @@ const CustomNode = ({ data }: { data: any }) => {
       <Image
         src={data.imageSrc}
         alt="Device"
-        width={80}
-        height={80}
+        width={isZapIcon2 ? 40 : 80}
+        height={isZapIcon2 ? 40 : 80}
         className="rounded-full"
       />
       <Handle
@@ -257,7 +262,7 @@ const BubbleMap: React.FC<BubbleMapProps> = ({
               data: { 
                 ...node.data, 
                 onHover: onHoverDevice,
-                id: node.data.id || node.id  // Ensure id is available in data
+                id: node.data.id || node.id
               }
             }))}
             edges={edges}
@@ -269,8 +274,14 @@ const BubbleMap: React.FC<BubbleMapProps> = ({
             zoomOnScroll={false}
             nodesDraggable={true}
             preventScrolling={false}
-            minZoom={0.5}
+            minZoom={0.3}
             maxZoom={1.5}
+            defaultZoom={0.6}
+            fitViewOptions={{ 
+              padding: 0.5,
+              minZoom: 0.4,
+              maxZoom: 0.7
+            }}
             className="w-full h-full"
             snapToGrid={false}
             snapGrid={[1, 1]}
@@ -281,8 +292,6 @@ const BubbleMap: React.FC<BubbleMapProps> = ({
             }}
             style={{ background: 'transparent' }}
           >
-            {/* Remove the Background component to rely solely on BackgroundScene */}
-            {/* <Background color="#E5E7EB" gap={16} /> */}
             <Controls showInteractive={false} />
           </ReactFlow>
         </div>

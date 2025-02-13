@@ -27,7 +27,7 @@ const chargers = [
     transactions: 1200,
     cost_generated: 5000.75,
     income_generated: 15000.5,
-    balance_total: 10000.25,
+    balance_total: 10000,
   },
   {
     id_charger: "CHG-002",
@@ -189,7 +189,9 @@ const AgentSidebar: React.FC<AgentSidebarProps> = ({
                       height={48}
                       className="w-8 h-8 object-contain"
                       style={{ 
-                        transform: 'translateY(3px) translateX(5px) scale(3.5)'
+                        transform: index >= 4 
+                          ? 'scale(2.0)'  // Less zoom for Zap_Icon2
+                          : 'translateY(3px) translateX(5px) scale(3.5)'  // Keep original transform for Zap_Icon
                       }}
                     />
                   </div>

@@ -6,23 +6,13 @@ import { formatDistanceToNow, parseISO } from 'date-fns';
 import { TransactionLog } from '../../types/logs';
 
 // Helper function to safely format timestamp
-const formatTimestamp = (timestamp: string) => {
-  try {
-    const date = parseISO(timestamp);
-    if (isNaN(date.getTime())) {
-      return 'Invalid date';
-    }
-    // Format as HH:mm:ss
-    return date.toLocaleTimeString('en-US', { 
-      hour12: false,
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    });
-  } catch (error) {
-    console.error('Error formatting timestamp:', error);
-    return 'Invalid date';
-  }
+const formatTimestamp = (date: Date) => {
+  return date.toLocaleTimeString('en-US', { 
+    hour12: false,
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
 };
 
 // Helper function to safely format status
@@ -116,7 +106,7 @@ const LogEntry = ({ log, isNew }: { log: TransactionLog; isNew?: boolean }) => {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <span className="text-white-400">
-            {formatTimestamp(log.timestamp)}
+            {formatTimestamp(new Date(log.timestamp))}
           </span>
           <span className={`${getStatusColor(log.status)}`}>
             [{formatStatus(log.status)}]
@@ -210,6 +200,8 @@ export default function LogsViewer() {
   const [expandedLogs, setExpandedLogs] = useState<Set<string>>(new Set());
   const [chargerData, setChargerData] = useState<ChargerData[]>([]);
   const [lastChargerSyncTime, setLastChargerSyncTime] = useState<Date>(new Date());
+  const [logTimestamps, setLogTimestamps] = useState<Map<string, Date>>(new Map());
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   const toggleExpand = () => {
     if (isExpanded) {
@@ -284,7 +276,7 @@ export default function LogsViewer() {
       console.group(`🔵 New Logs Received (${newLogs.length})`);
       newLogs.forEach(log => {
         console.log(
-          `%c${formatTimestamp(log.timestamp)} | ${log.network} | ${log.status}`,
+          `%c${formatTimestamp(new Date(log.timestamp))} | ${log.network} | ${log.status}`,
           'color: #4CAF50; font-weight: bold'
         );
         if (log.raw_response) {
@@ -295,7 +287,17 @@ export default function LogsViewer() {
       
       // Auto-scroll to bottom for new logs
       logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-      setLastUpdateTime(new Date());
+      const now = new Date();
+      setLogTimestamps(prev => {
+        const updated = new Map(prev);
+        newLogs.forEach(log => {
+          if (!updated.has(log.txHash)) {
+            updated.set(log.txHash, now);
+          }
+        });
+        return updated;
+      });
+      setLastUpdateTime(now);
       setPreviousLogsLength(logs.length);
     }
   }, [logs, previousLogsLength]);
@@ -312,24 +314,36 @@ export default function LogsViewer() {
     }
   };
 
-  // Set up polling interval for charger data
+  // Modify the polling effect
   useEffect(() => {
-    // Fetch immediately on mount
+    // Initial fetch
+    refresh();
     fetchChargerData();
+    setCurrentTime(new Date());
 
-    // Set up 10-second interval instead of 30
-    const interval = setInterval(fetchChargerData, 10000);
+    // Set up polling intervals
+    const interval = setInterval(async () => {
+      await refresh();
+      await fetchChargerData();
+      setCurrentTime(new Date()); // Update timestamp only when new data arrives
+      console.log('Fetching new data...'); // Debug log
+    }, 10000);
 
-    // Cleanup on unmount
+    // Cleanup
     return () => clearInterval(interval);
-  }, []);
+  }, []); // Remove dependencies to prevent multiple intervals
+
+  // Add debug logging for charger data updates
+  useEffect(() => {
+    console.log('Charger data updated:', chargerData);
+  }, [chargerData]);
 
   // Helper function to get latest charger data
   const getChargerData = (chargerId: string) => {
     return chargerData.find(c => c.id_charger === chargerId);
   };
 
-  // Modify the log rendering to use the fetched data
+  // Modify renderLogEntry to use the currentTime state
   const renderLogEntry = (log: TransactionLog, index: number) => {
     const isCharger = log.txHash.startsWith('CHG-');
     const charger = isCharger ? getChargerData(log.txHash) : null;
@@ -341,18 +355,27 @@ export default function LogsViewer() {
         }`}
       >
         <div className="flex items-center justify-between">
-          <span className="text-gray-400">
-            {formatTimestamp(log.timestamp)}
-          </span>
-          <span className={`px-2 py-0.5 rounded ${
-            isCharger 
-              ? log.status === 'active' 
-                ? 'bg-green-500/20 text-green-400'
-                : 'bg-yellow-500/20 text-yellow-400'
-              : getStatusColor(log.status)
-          }`}>
-            {isCharger ? log.displayStatus : formatStatus(log.status)}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-gray-400">
+              {formatTimestamp(currentTime)}
+            </span>
+            <span className={`px-2 py-0.5 rounded ${
+              isCharger 
+                ? log.status === 'active' 
+                  ? 'bg-green-500/20 text-green-400'
+                  : 'bg-yellow-500/20 text-yellow-400'
+                : getStatusColor(log.status)
+            }`}>
+              {isCharger ? log.displayStatus : formatStatus(log.status)}
+            </span>
+          </div>
+          
+          {/* Add completed tag */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs px-2 py-1 rounded-full bg-green-500/10 text-green-500 font-medium">
+              ✓ completed
+            </span>
+          </div>
         </div>
         
         <div className="mt-1">
