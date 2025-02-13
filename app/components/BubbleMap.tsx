@@ -36,10 +36,10 @@ const CustomNode = ({ data }: { data: any }) => (
       style={{ visibility: 'hidden', top: '50%', transform: 'translateY(-50%)' }}
     />
     <Image
-      src="/icons/zap_icon.png"
+      src={data.imageSrc}
       alt="Device"
-      layout="fill"
-      objectFit="cover"
+      width={80}
+      height={80}
       className="rounded-full"
     />
     <Handle
@@ -99,49 +99,49 @@ const initialNodes: Node[] = [
     id: 'device-1',
     type: 'customNode',
     position: { x: 600, y: 200 },
-    data: { label: 'Device 1' },
+    data: { label: 'Device 1', imageSrc: '/icons/zap_icon2.png' },
     draggable: true,
   },
   {
     id: 'device-2',
     type: 'customNode',
     position: { x: 600, y: 300 },
-    data: { label: 'Device 2' },
+    data: { label: 'Device 2', imageSrc: '/icons/zap_icon2.png' },
     draggable: true,
   },
   {
     id: 'device-3',
     type: 'customNode',
     position: { x: 600, y: 400 },
-    data: { label: 'Device 3' },
+    data: { label: 'Device 3', imageSrc: '/icons/zap_icon2.png' },
     draggable: true,
   },
   {
     id: 'device-4',
     type: 'customNode',
     position: { x: 200, y: 200 },
-    data: { label: 'Device 4' },
+    data: { label: 'Device 4', imageSrc: '/icons/zap_icon.png' },
     draggable: true,
   },
   {
     id: 'device-5',
     type: 'customNode',
     position: { x: 200, y: 300 },
-    data: { label: 'Device 5' },
+    data: { label: 'Device 5', imageSrc: '/icons/zap_icon.png' },
     draggable: true,
   },
   {
     id: 'device-6',
     type: 'customNode',
     position: { x: 200, y: 400 },
-    data: { label: 'Device 6' },
+    data: { label: 'Device 6', imageSrc: '/icons/zap_icon.png' },
     draggable: true,
   },
   {
     id: 'device-7',
     type: 'customNode',
     position: { x: 200, y: 500 },
-    data: { label: 'Device 7' },
+    data: { label: 'Device 7', imageSrc: '/icons/zap_icon.png' },
     draggable: true,
   },
 ];
