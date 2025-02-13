@@ -187,10 +187,13 @@ const AgentSidebar: React.FC<AgentSidebarProps> = ({
                       {...IMAGES[index >= 4 ? 'zapIcon2' : 'zapIcon']}
                       className="w-8 h-8 object-contain"
                       priority={true}
+                      onError={(e) => {
+                        console.error(`Failed to load image: ${IMAGES[index >= 4 ? 'zapIcon2' : 'zapIcon'].src}`);
+                      }}
                       style={{ 
                         transform: index >= 4 
                           ? 'scale(2.0)'
-                          : 'translateY(3px) translateX(5px) scale(3.5)'
+                          : ' scale(2)'
                       }}
                     />
                   </div>

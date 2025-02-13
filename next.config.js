@@ -48,7 +48,7 @@ const nextConfig = {
   },
   // Enable image domains if you're using next/image
   images: {
-    unoptimized: process.env.NODE_ENV === 'development',
+    unoptimized: true,
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",

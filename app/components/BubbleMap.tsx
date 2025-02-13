@@ -15,6 +15,7 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 import Image from 'next/image';
 import BackgroundScene from './BackgroundScene';
+import { IMAGES } from '../config/images';
 
 interface BubbleMapProps {
   selectedChargerId?: string;
@@ -37,8 +38,9 @@ const CustomNode = ({ data }: { data: any }) => {
     }
   };
 
-  // Determine if this is a zap_icon2 node
-  const isZapIcon2 = data.imageSrc?.includes('zap_icon2');
+  // Determine if this is a zapIcon2 node based on data index
+  const isZapIcon2 = data.index >= 4;
+  const imageConfig = IMAGES[isZapIcon2 ? 'zapIcon2' : 'zapIcon'];
 
   return (
     <div
@@ -54,11 +56,14 @@ const CustomNode = ({ data }: { data: any }) => {
         style={{ visibility: 'hidden', top: '50%', transform: 'translateY(-50%)' }}
       />
       <Image
-        src={data.imageSrc}
-        alt="Device"
+        {...imageConfig}
         width={isZapIcon2 ? 40 : 80}
         height={isZapIcon2 ? 40 : 80}
         className="rounded-full"
+        priority={true}
+        onError={(e) => {
+          console.error(`Failed to load image: ${imageConfig.src}`);
+        }}
       />
       <Handle
         type="source"
@@ -95,7 +100,7 @@ const DeviceNode = ({ data }: { data: any }) => {
   return (
     <div className="w-24 h-24 rounded-full flex items-center justify-center cursor-pointer">
       <Image
-        src="/icons/zap_icon.png"
+        src="/icons/zap_icon1.svg"
         alt="Device"
         width={80}
         height={80}
@@ -118,49 +123,84 @@ const initialNodes: Node[] = [
     id: 'device-1',
     type: 'customNode',
     position: { x: 600, y: 200 },
-    data: { label: 'Device 1', imageSrc: '/icons/zap_icon2.png' },
+    data: {
+      label: 'Device 1',
+      imageSrc: '/icons/zap-icon1.svg',
+      index: 0,
+      onHover: (id: string | null) => onHoverDevice(id),
+    },
     draggable: true,
   },
   {
     id: 'device-2',
     type: 'customNode',
     position: { x: 600, y: 300 },
-    data: { label: 'Device 2', imageSrc: '/icons/zap_icon2.png' },
+    data: {
+      label: 'Device 2',
+      imageSrc: '/icons/zap_icon2.svg',
+      index: 1,
+      onHover: (id: string | null) => onHoverDevice(id),
+    },
     draggable: true,
   },
   {
     id: 'device-3',
     type: 'customNode',
     position: { x: 600, y: 400 },
-    data: { label: 'Device 3', imageSrc: '/icons/zap_icon2.png' },
+    data: {
+      label: 'Device 3',
+      imageSrc: '/icons/zap_icon2.svg',
+      index: 2,
+      onHover: (id: string | null) => onHoverDevice(id),
+    },
     draggable: true,
   },
   {
     id: 'device-4',
     type: 'customNode',
     position: { x: 200, y: 200 },
-    data: { label: 'Device 4', imageSrc: '/icons/zap_icon.png' },
+    data: {
+      label: 'Device 4',
+      imageSrc: '/icons/zap_icon.svg',
+      index: 3,
+      onHover: (id: string | null) => onHoverDevice(id),
+    },
     draggable: true,
   },
   {
     id: 'device-5',
     type: 'customNode',
     position: { x: 200, y: 300 },
-    data: { label: 'Device 5', imageSrc: '/icons/zap_icon.png' },
+    data: {
+      label: 'Device 5',
+      imageSrc: '/icons/zap_icon.svg',
+      index: 4,
+      onHover: (id: string | null) => onHoverDevice(id),
+    },
     draggable: true,
   },
   {
     id: 'device-6',
     type: 'customNode',
     position: { x: 200, y: 400 },
-    data: { label: 'Device 6', imageSrc: '/icons/zap_icon.png' },
+    data: {
+      label: 'Device 6',
+      imageSrc: '/icons/zap_icon.svg',
+      index: 5,
+      onHover: (id: string | null) => onHoverDevice(id),
+    },
     draggable: true,
   },
   {
     id: 'device-7',
     type: 'customNode',
     position: { x: 200, y: 500 },
-    data: { label: 'Device 7', imageSrc: '/icons/zap_icon.png' },
+    data: {
+      label: 'Device 7',
+      imageSrc: '/icons/zap_icon.svg',
+      index: 6,
+      onHover: (id: string | null) => onHoverDevice(id),
+    },
     draggable: true,
   },
 ];
