@@ -24,31 +24,45 @@ interface BubbleMapProps {
   onHoverDevice: (deviceId: string | null) => void;
 }
 
-const CustomNode = ({ data }: { data: any }) => (
-  <div
-    className="w-24 h-24 rounded-full flex items-center justify-center"
-    onMouseEnter={() => data.onHover(data.id)}
-    onMouseLeave={() => data.onHover(null)}
-  >
-    <Handle
-      type="target"
-      position={Position.Top}
-      style={{ visibility: 'hidden', top: '50%', transform: 'translateY(-50%)' }}
-    />
-    <Image
-      src={data.imageSrc}
-      alt="Device"
-      width={80}
-      height={80}
-      className="rounded-full"
-    />
-    <Handle
-      type="source"
-      position={Position.Bottom}
-      style={{ visibility: 'hidden', bottom: '50%', transform: 'translateY(50%)' }}
-    />
-  </div>
-);
+const CustomNode = ({ data }: { data: any }) => {
+  const handleMouseEnter = () => {
+    if (data.onHover) {
+      data.onHover(data.id);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (data.onHover) {
+      data.onHover(null);
+    }
+  };
+
+  return (
+    <div
+      className="w-24 h-24 rounded-full flex items-center justify-center"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <Handle
+        type="target"
+        position={Position.Top}
+        style={{ visibility: 'hidden', top: '50%', transform: 'translateY(-50%)' }}
+      />
+      <Image
+        src={data.imageSrc}
+        alt="Device"
+        width={80}
+        height={80}
+        className="rounded-full"
+      />
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        style={{ visibility: 'hidden', bottom: '50%', transform: 'translateY(50%)' }}
+      />
+    </div>
+  );
+};
 
 const BubbleLayoutNode = () => (
   <div className="relative w-32 h-32 bg-white rounded-full flex items-center justify-center">
@@ -240,7 +254,11 @@ const BubbleMap: React.FC<BubbleMapProps> = ({
           <ReactFlow
             nodes={nodes.map(node => ({
               ...node,
-              data: { ...node.data, onHover: onHoverDevice }
+              data: { 
+                ...node.data, 
+                onHover: onHoverDevice,
+                id: node.data.id || node.id  // Ensure id is available in data
+              }
             }))}
             edges={edges}
             nodeTypes={nodeTypes}
