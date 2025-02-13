@@ -24,6 +24,10 @@ export const metadata: Metadata = {
       sizes: '180x180',
     },
   },
+  icons: [
+    { rel: 'preload', url: '/icons/zap_icon.png', as: 'image' },
+    { rel: 'preload', url: '/icons/zap_icon2.png', as: 'image' },
+  ],
 }
 
 export default function RootLayout({

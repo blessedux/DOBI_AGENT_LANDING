@@ -48,14 +48,14 @@ const nextConfig = {
   },
   // Enable image domains if you're using next/image
   images: {
-    unoptimized: true,
-    domains: ['your-domain.com'],
-    // Add a remotePatterns entry if needed
+    unoptimized: process.env.NODE_ENV === 'development',
+    dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'your-domain.com',
-        pathname: '/icons/**',
+        hostname: '**',
       },
     ],
   },

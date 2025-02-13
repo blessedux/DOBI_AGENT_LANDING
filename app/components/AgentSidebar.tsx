@@ -13,6 +13,7 @@ import {
 import { Charger } from "./DobiChart";
 import Image from 'next/image';
 import { motion, AnimatePresence } from "framer-motion";
+import { IMAGES } from '../config/images';
 
 const chargers = [
   {
@@ -183,11 +184,9 @@ const AgentSidebar: React.FC<AgentSidebarProps> = ({
                 <div className="relative">
                   <div className="w-12 h-12 rounded-full bg-[#E8EDFF] flex items-center justify-center overflow-hidden">
                     <Image 
-                      src={index >= 4 ? "/icons/zap_icon2.png" : "/icons/zap_icon.png"}
-                      alt="Zap Icon"
-                      width={48}
-                      height={48}
+                      {...IMAGES[index >= 4 ? 'zapIcon2' : 'zapIcon']}
                       className="w-8 h-8 object-contain"
+                      priority={true}
                       style={{ 
                         transform: index >= 4 
                           ? 'scale(2.0)'
