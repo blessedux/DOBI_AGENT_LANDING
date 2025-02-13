@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Badge } from "./ui/Badge";
 import { ScrollArea } from "./ui/ScrollArea";
 import { 
@@ -12,6 +12,8 @@ import {
 } from "lucide-react"; 
 import { Charger } from "./DobiChart";
 import Image from 'next/image';
+import { motion, AnimatePresence } from "framer-motion";
+import { IMAGES } from '../config/images';
 
 const chargers = [
   {
@@ -26,7 +28,7 @@ const chargers = [
     transactions: 1200,
     cost_generated: 5000.75,
     income_generated: 15000.5,
-    balance_total: 10000.25,
+    balance_total: 10000,
   },
   {
     id_charger: "CHG-002",
@@ -115,41 +117,58 @@ const chargers = [
 ];
 
 interface AgentSidebarProps {
-  setSelectedDevice: (device: Charger | null) => void;
   selectedDevice: Charger | null;
-  isSidebarOpen: boolean;
-  setIsSidebarOpen: (open: boolean) => void;
+  setSelectedDevice: (device: Charger | null) => void;
+  hoveredDeviceId: string | null;
 }
 
 const AgentSidebar: React.FC<AgentSidebarProps> = ({ 
-  isSidebarOpen, 
-  setIsSidebarOpen,
   selectedDevice,
-  setSelectedDevice 
+  setSelectedDevice,
+  hoveredDeviceId,
 }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
   const handleChevronClick = () => {
     if (selectedDevice) {
+      // If there's a selected device, close it first
       setSelectedDevice(null);
     } else {
-      setIsSidebarOpen(!isSidebarOpen);
+      // If no device is selected, toggle the sidebar
+      setIsOpen(!isOpen);
     }
   };
 
+  // Remove the auto-open effect
+  // Instead, close the sidebar when device workflow opens
+  useEffect(() => {
+    if (selectedDevice) {
+      setIsOpen(false);
+    }
+  }, [selectedDevice]);
+
+  const hoveredDevice = chargers.find(charger => charger.id_charger === hoveredDeviceId);
+
   return (
-    <div className={`fixed right-0 top-[64px] bottom-0 bg-white/90 backdrop-blur-md shadow-lg z-[60] 
-        transition-all duration-300 border-l border-gray-100 flex flex-col
-        ${isSidebarOpen ? "w-80" : "w-24"}`}
+    <motion.div
+      initial={{ width: "72px" }}
+      animate={{ width: isOpen && !selectedDevice ? "384px" : "100px" }}
+      transition={{ duration: 0.3 }}
+      className="fixed right-0 top-[64px] bottom-0 bg-white border-l border-gray-100 shadow-lg z-[60]"
+      style={{ height: 'calc(100vh - 64px)' }}
     >
-      <div className="flex items-center justify-between p-4 border-b border-gray-100">
+      <div className="sticky top-0 flex items-center justify-between p-4 border-b border-gray-100 bg-white">
         <button 
           onClick={handleChevronClick}
           className="p-2 rounded-full hover:bg-gray-100/80 transition-all"
+          aria-label={selectedDevice ? "Close device workflow" : "Toggle agent sidebar"}
         >
-          {isSidebarOpen ? <ChevronRight className="text-gray-600" /> : <ChevronLeft className="text-gray-600" />}
+          {isOpen && !selectedDevice ? <ChevronRight className="text-gray-600" /> : <ChevronLeft className="text-gray-600" />}
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      {/* Always show the container with charger icons */}
+      <div className="overflow-y-auto h-[calc(100%-65px)]">
         <div className="p-4 space-y-4">
           {chargers.map((charger, index) => (
             <button
@@ -165,12 +184,17 @@ const AgentSidebar: React.FC<AgentSidebarProps> = ({
                 <div className="relative">
                   <div className="w-12 h-12 rounded-full bg-[#E8EDFF] flex items-center justify-center overflow-hidden">
                     <Image 
-                      src="/icons/Zap_Icon.png"
-                      alt="Zap Icon"
-                      width={48}
-                      height={48}
-                      className="w-[120%] h-[120%] object-cover"
-                      style={{ transform: 'scale(1.2)' }}
+                      {...IMAGES[index >= 4 ? 'zapIcon2' : 'zapIcon']}
+                      className="w-8 h-8 object-contain"
+                      priority={true}
+                      onError={(e) => {
+                        console.error(`Failed to load image: ${IMAGES[index >= 4 ? 'zapIcon2' : 'zapIcon'].src}`);
+                      }}
+                      style={{ 
+                        transform: index >= 4 
+                          ? 'scale(2.0)'
+                          : ' scale(2)'
+                      }}
                     />
                   </div>
                   <Badge 
@@ -179,48 +203,78 @@ const AgentSidebar: React.FC<AgentSidebarProps> = ({
                     #{index + 1}
                   </Badge>
                   
-                  {isSidebarOpen && (
-                    <Badge 
-                      className={`absolute -top-3 right-[-200px] px-2 py-0.5 text-[10px] rounded-xl font-medium text-white
-                        ${index + 1 === 2 
-                          ? 'bg-[#9A99FF]' 
-                          : 'bg-green-500'
-                        }`}
-                    >
-                      {index + 1 === 2 ? 'maintenance' : 'active'}
-                    </Badge>
+                  {/* Only show expanded content when sidebar is open and no device selected */}
+                  {isOpen && !selectedDevice && (
+                    <>
+                      <Badge 
+                        className={`absolute -top-3 right-[-200px] px-2 py-0.5 text-[10px] rounded-xl font-medium text-white
+                          ${index + 1 === 2 
+                            ? 'bg-[#9A99FF]' 
+                            : 'bg-green-500'
+                          }`}
+                      >
+                        {index + 1 === 2 ? 'maintenance' : 'active'}
+                      </Badge>
+                    </>
                   )}
                 </div>
                 
-                {isSidebarOpen && (
-                  <div className="flex-1">
-                    <h3 className="font-medium text-gray-900">{charger.name}</h3>
-                    <div className="flex items-center gap-1 text-xs text-gray-500">
-                      <span>{charger.model}</span>
-                      <span>•</span>
-                      <span>{charger.location.address}</span>
+                {/* Only show expanded content when sidebar is open and no device selected */}
+                {isOpen && !selectedDevice && (
+                  <>
+                    <div className="flex-1">
+                      <h3 className="font-medium text-gray-900">{charger.name}</h3>
+                      <div className="flex items-center gap-1 text-xs text-gray-500">
+                        <span>{charger.model}</span>
+                        <span>•</span>
+                        <span>{charger.location.address}</span>
+                      </div>
                     </div>
-                  </div>
+                    
+                    <div className="grid grid-cols-2 gap-4 mt-4">
+                      <div className="bg-[#F9FAFE] p-2 rounded-lg">
+                        <p className="text-xs text-[#2D4EC8] font-medium opacity-40">Transactions</p>
+                        <p className="text-lg font-semibold opacity-60">{charger.transactions}</p>
+                      </div>
+                      <div className="bg-[#F9FAFE] p-2 rounded-lg">
+                        <p className="text-xs text-[#2D4EC8] font-medium opacity-40">Balance</p>
+                        <p className="text-lg font-semibold opacity-60">${charger.balance_total.toLocaleString()}</p>
+                      </div>
+                    </div>
+                  </>
                 )}
               </div>
-
-              {isSidebarOpen && (
-                <div className="grid grid-cols-2 gap-4 mt-4">
-                  <div className="bg-[#F9FAFE] p-2 rounded-lg">
-                    <p className="text-xs text-[#2D4EC8] font-medium opacity-40">Transactions</p>
-                    <p className="text-lg font-semibold opacity-60">{charger.transactions}</p>
-                  </div>
-                  <div className="bg-[#F9FAFE] p-2 rounded-lg">
-                    <p className="text-xs text-[#2D4EC8] font-medium opacity-40">Balance</p>
-                    <p className="text-lg font-semibold opacity-60">${charger.balance_total.toLocaleString()}</p>
-                  </div>
-                </div>
-              )}
             </button>
           ))}
+
+          {hoveredDevice && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              className="absolute top-0 left-0 w-full p-4 bg-white shadow-lg rounded-lg"
+            >
+              <h3 className="font-medium text-gray-900">{hoveredDevice.name}</h3>
+              <div className="flex items-center gap-1 text-xs text-gray-500">
+                <span>{hoveredDevice.model}</span>
+                <span>•</span>
+                <span>{hoveredDevice.location.address}</span>
+              </div>
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                <div className="bg-[#F9FAFE] p-2 rounded-lg">
+                  <p className="text-xs text-[#2D4EC8] font-medium opacity-40">Transactions</p>
+                  <p className="text-lg font-semibold opacity-60">{hoveredDevice.transactions}</p>
+                </div>
+                <div className="bg-[#F9FAFE] p-2 rounded-lg">
+                  <p className="text-xs text-[#2D4EC8] font-medium opacity-40">Balance</p>
+                  <p className="text-lg font-semibold opacity-60">${hoveredDevice.balance_total.toLocaleString()}</p>
+                </div>
+              </div>
+            </motion.div>
+          )} 
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

@@ -61,24 +61,6 @@ if (mockLogs.length === 0) {
   }
 }
 
-/**
- * POST /api/logs
- * 
- * Endpoint to receive new transaction logs from smart contracts
- * 
- * Headers Required:
- * - x-api-key: Your API key for authentication
- * 
- * Example Request Body:
- * {
- *   "sender": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
- *   "amount": "0.5",
- *   "txHash": "0x123...abc",
- *   "timestamp": "2024-02-20T15:30:00Z",
- *   "status": "completed",
- *   "network": "mantle-testnet"
- * }
- */
 export async function POST(request: Request) {
   console.log('POST request received');  // Debug log
   
@@ -156,59 +138,41 @@ export async function POST(request: Request) {
  */
 export async function GET() {
   try {
-    const response = await fetch('https://dobi-mantle.dobprotocol.com/api/logs', {
-      method: 'GET',
+    const response = await fetch('https://dobi-mantle.dobprotocol.com/api/chargers', {
       headers: {
         'Accept': 'application/json',
-        'Authorization': `Bearer ${env.API_KEY}`,
         'Content-Type': 'application/json',
       },
+      cache: 'no-store',
     });
 
-    const rawData = await response.json();
-    console.log('Raw API Response:', rawData);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
 
-    // Handle both single and multiple log entries
-    const logsToProcess = Array.isArray(rawData) ? rawData : [rawData];
+    const data = await response.json();
     
-    // Transform each log entry
-    const transformedLogs = logsToProcess.map(log => ({
-      sender: log.data?.["contract address"] || "unknown",
-      amount: log.data?.amount || "0",
-      txHash: log.data?.tx_hash || `0x${Math.random().toString(16).substring(2, 14)}`,
-      timestamp: new Date().toISOString(),
-      status: log.data?.status === "Only 15 blocks passed; waiting for at least 20 blocks." 
-        ? "pending" 
-        : "completed",
-      network: "Mantle",
-      raw_response: {
-        message: log.message || "Unknown message",
-        data: {
-          raw_response: log.data?.raw_response || "",
-          final_decision: log.data?.final_decision || "",
-          "contract address": log.data?.["contract address"] || "",
-          status: log.data?.status || "",
-          think_process: log.data?.raw_response || "",
-          agent: log.data?.agent || "",
-          target: log.data?.target || "",
-          tx_hash: log.data?.tx_hash || ""
-        }
-      }
-    }));
+    // Transform charger data into log format with simulated value changes
+    const transformedLogs = data.map((charger: any) => {
+      // Add small random variations to balance (±2%)
+      const variation = charger.balance_total * (Math.random() * 0.04 - 0.02);
+      const updatedBalance = charger.balance_total + variation;
 
-    // Keep only unique logs based on txHash
-    const uniqueLogs = Array.from(
-      new Map(transformedLogs.map(log => [log.txHash, log])).values()
-    );
+      return {
+        txHash: `CHG-${charger.id_charger}`,
+        timestamp: new Date().toISOString(),
+        status: charger.status || 'active',
+        amount: updatedBalance.toString(),
+        network: 'mantle',
+        balance_total: updatedBalance,
+        income_generated: charger.income_generated + (variation > 0 ? variation : 0),
+        cost_generated: charger.cost_generated + (variation < 0 ? Math.abs(variation) : 0)
+      };
+    });
 
-    console.log('Transformed Logs:', uniqueLogs);
-    return NextResponse.json(uniqueLogs);
-
+    return NextResponse.json(transformedLogs);
   } catch (error) {
-    console.error('Logs API Error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch logs' },
-      { status: 500 }
-    );
+    console.error('API route error:', error);
+    return NextResponse.json({ error: 'Failed to fetch data' }, { status: 500 });
   }
 } 

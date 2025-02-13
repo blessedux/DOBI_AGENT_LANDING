@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import AgentSidebar from "./AgentSidebar";
 import BubbleMap from "./BubbleMap";
 import DobiChart, { Charger } from "./DobiChart";
 import DeviceWorkflow from "./DeviceWorkflow";
-import MilestoneChart from "./MilestoneChart";
 
 interface DashboardProps {
   activeTab: "architecture" | "devices";
@@ -18,6 +18,8 @@ const Dashboard: React.FC<DashboardProps> = ({
   selectedDevice,
   setSelectedDevice 
 }) => {
+  const [hoveredDeviceId, setHoveredDeviceId] = useState<string | null>(null);
+
   useEffect(() => {
     console.log('Dashboard state:', { 
       activeTab,
@@ -50,6 +52,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             <DobiChart 
               activeTab={activeTab} 
               selectedDevice={selectedDevice}
+              setSelectedDevice={setSelectedDevice}
             />
           ) : (
             <div className="relative w-full h-full">
@@ -66,7 +69,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         </motion.div>
       </AnimatePresence>
 
-      {/* Milestone Chart Overlay */}
+      {/* Device Workflow Overlay */}
       <AnimatePresence>
         {selectedDevice && activeTab === "devices" && (
           <motion.div 
@@ -74,12 +77,22 @@ const Dashboard: React.FC<DashboardProps> = ({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             transition={{ duration: 0.3 }}
-            className="fixed top-[64px] left-0 right-0 bottom-0 z-[50] bg-white/95"
+            className="fixed top-[64px] left-0 right-0 bottom-0 z-[50]"
           >
-            <MilestoneChart device={selectedDevice} />
+            <DeviceWorkflow 
+              selectedDevice={selectedDevice} 
+              onClose={() => setSelectedDevice(null)}
+            />
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Agent Sidebar */}
+      <AgentSidebar
+        selectedDevice={selectedDevice}
+        setSelectedDevice={setSelectedDevice}
+        hoveredDeviceId={hoveredDeviceId}
+      />
     </div>
   );
 }

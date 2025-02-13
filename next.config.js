@@ -48,7 +48,16 @@ const nextConfig = {
   },
   // Enable image domains if you're using next/image
   images: {
-    domains: ['your-image-domain.com'], // Add your image domains here
+    unoptimized: true,
+    dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
   },
   // Add webpack config if needed
   webpack: (config, { isServer }) => {

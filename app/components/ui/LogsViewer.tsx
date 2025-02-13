@@ -6,23 +6,13 @@ import { formatDistanceToNow, parseISO } from 'date-fns';
 import { TransactionLog } from '../../types/logs';
 
 // Helper function to safely format timestamp
-const formatTimestamp = (timestamp: string) => {
-  try {
-    const date = parseISO(timestamp);
-    if (isNaN(date.getTime())) {
-      return 'Invalid date';
-    }
-    // Format as HH:mm:ss
-    return date.toLocaleTimeString('en-US', { 
-      hour12: false,
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    });
-  } catch (error) {
-    console.error('Error formatting timestamp:', error);
-    return 'Invalid date';
-  }
+const formatTimestamp = (date: Date) => {
+  return date.toLocaleTimeString('en-US', { 
+    hour12: false,
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
 };
 
 // Helper function to safely format status
@@ -45,6 +35,29 @@ const getStatusColor = (status: string | undefined) => {
       return 'text-gray-400';
   }
 };
+
+// Add this helper function
+const formatChargerLog = (log: TransactionLog) => {
+  if (log.txHash.startsWith('CHG-')) {
+    return {
+      ...log,
+      type: 'charger',
+      displayAmount: `$${parseFloat(log.amount).toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })}`,
+      displayStatus: log.status === 'active' ? 'Online' : 'Maintenance'
+    };
+  }
+  return log;
+};
+
+interface ChargerData {
+  id_charger: string;
+  balance_total: number;
+  income_generated: number;
+  cost_generated: number;
+}
 
 const LogEntry = ({ log, isNew }: { log: TransactionLog; isNew?: boolean }) => {
   const [showRawData, setShowRawData] = useState(false);
@@ -93,7 +106,7 @@ const LogEntry = ({ log, isNew }: { log: TransactionLog; isNew?: boolean }) => {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <span className="text-white-400">
-            {formatTimestamp(log.timestamp)}
+            {formatTimestamp(new Date(log.timestamp))}
           </span>
           <span className={`${getStatusColor(log.status)}`}>
             [{formatStatus(log.status)}]
@@ -185,6 +198,10 @@ export default function LogsViewer() {
   const [lastUpdateTime, setLastUpdateTime] = useState<Date>(new Date());
   const [previousLogsLength, setPreviousLogsLength] = useState(0);
   const [expandedLogs, setExpandedLogs] = useState<Set<string>>(new Set());
+  const [chargerData, setChargerData] = useState<ChargerData[]>([]);
+  const [lastChargerSyncTime, setLastChargerSyncTime] = useState<Date>(new Date());
+  const [logTimestamps, setLogTimestamps] = useState<Map<string, Date>>(new Map());
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   const toggleExpand = () => {
     if (isExpanded) {
@@ -259,7 +276,7 @@ export default function LogsViewer() {
       console.group(`🔵 New Logs Received (${newLogs.length})`);
       newLogs.forEach(log => {
         console.log(
-          `%c${formatTimestamp(log.timestamp)} | ${log.network} | ${log.status}`,
+          `%c${formatTimestamp(new Date(log.timestamp))} | ${log.network} | ${log.status}`,
           'color: #4CAF50; font-weight: bold'
         );
         if (log.raw_response) {
@@ -270,10 +287,145 @@ export default function LogsViewer() {
       
       // Auto-scroll to bottom for new logs
       logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-      setLastUpdateTime(new Date());
+      const now = new Date();
+      setLogTimestamps(prev => {
+        const updated = new Map(prev);
+        newLogs.forEach(log => {
+          if (!updated.has(log.txHash)) {
+            updated.set(log.txHash, now);
+          }
+        });
+        return updated;
+      });
+      setLastUpdateTime(now);
       setPreviousLogsLength(logs.length);
     }
   }, [logs, previousLogsLength]);
+
+  // Add function to fetch charger data
+  const fetchChargerData = async () => {
+    try {
+      const response = await fetch('https://dobi-mantle.dobprotocol.com/api/chargers');
+      const data = await response.json();
+      setChargerData(data);
+      setLastChargerSyncTime(new Date());
+    } catch (error) {
+      console.error('Error fetching charger data:', error);
+    }
+  };
+
+  // Modify the polling effect
+  useEffect(() => {
+    // Initial fetch
+    refresh();
+    fetchChargerData();
+    setCurrentTime(new Date());
+
+    // Set up polling intervals
+    const interval = setInterval(async () => {
+      await refresh();
+      await fetchChargerData();
+      setCurrentTime(new Date()); // Update timestamp only when new data arrives
+      console.log('Fetching new data...'); // Debug log
+    }, 10000);
+
+    // Cleanup
+    return () => clearInterval(interval);
+  }, []); // Remove dependencies to prevent multiple intervals
+
+  // Add debug logging for charger data updates
+  useEffect(() => {
+    console.log('Charger data updated:', chargerData);
+  }, [chargerData]);
+
+  // Helper function to get latest charger data
+  const getChargerData = (chargerId: string) => {
+    return chargerData.find(c => c.id_charger === chargerId);
+  };
+
+  // Modify renderLogEntry to use the currentTime state
+  const renderLogEntry = (log: TransactionLog, index: number) => {
+    const isCharger = log.txHash.startsWith('CHG-');
+    const charger = isCharger ? getChargerData(log.txHash) : null;
+    
+    return (
+      <div key={log.txHash || Math.random()} 
+        className={`mb-2 p-2 rounded ${
+          index >= previousLogsLength - 1 ? 'animate-highlight' : ''
+        }`}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-gray-400">
+              {formatTimestamp(currentTime)}
+            </span>
+            <span className={`px-2 py-0.5 rounded ${
+              isCharger 
+                ? log.status === 'active' 
+                  ? 'bg-green-500/20 text-green-400'
+                  : 'bg-yellow-500/20 text-yellow-400'
+                : getStatusColor(log.status)
+            }`}>
+              {isCharger ? log.displayStatus : formatStatus(log.status)}
+            </span>
+          </div>
+          
+          {/* Add completed tag */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs px-2 py-1 rounded-full bg-green-500/10 text-green-500 font-medium">
+              ✓ completed
+            </span>
+          </div>
+        </div>
+        
+        <div className="mt-1">
+          <span className="text-gray-300">
+            {isCharger ? 'Charger ID: ' : 'TX: '}
+          </span>
+          <span className="font-mono text-gray-400">
+            {isCharger ? log.txHash.replace('CHG-', '') : log.txHash}
+          </span>
+        </div>
+
+        <div className="mt-1">
+          <span className="text-gray-300">
+            {isCharger ? 'Balance: ' : 'Amount: '}
+          </span>
+          <span className="text-gray-200">
+            {isCharger && charger 
+              ? `$${charger.balance_total.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                })}` 
+              : log.amount}
+          </span>
+        </div>
+
+        {isCharger && charger && (
+          <div className="mt-1 flex gap-4">
+            <div>
+              <span className="text-gray-300">Income: </span>
+              <span className="text-green-400">
+                ${charger.income_generated.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                })}
+              </span>
+            </div>
+            <div>
+              <span className="text-gray-300">Cost: </span>
+              <span className="text-red-400">
+                ${charger.cost_generated.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                })}
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div
@@ -288,8 +440,13 @@ export default function LogsViewer() {
         <span>{isExpanded ? "▼ Collapse Logs" : "▲ Expand Logs"}</span>
         <div className="flex items-center gap-4">
           <span className="text-xs text-gray-400">DOBI Smart Contract Logs</span>
-          {loading && <span className="text-xs text-yellow-400 animate-pulse">Syncing...</span>}
-          {!loading && <span className="text-xs text-gray-400">Last update: {formatDistanceToNow(lastUpdateTime, { addSuffix: true })}</span>}
+          {loading ? (
+            <span className="text-xs text-yellow-400 animate-pulse">Syncing...</span>
+          ) : (
+            <span className="text-xs text-gray-400">
+              Charging data synced {formatDistanceToNow(lastChargerSyncTime, { addSuffix: true })}
+            </span>
+          )}
           {error && <span className="text-xs text-red-400">Connection Error</span>}
         </div>
       </div>
@@ -298,13 +455,7 @@ export default function LogsViewer() {
         {error ? (
           renderError(error)
         ) : (
-          logs.map((log, index) => (
-            <LogEntry 
-              key={log.txHash || Math.random()} 
-              log={log} 
-              isNew={index >= previousLogsLength - 1}
-            />
-          ))
+          logs.map((log, index) => renderLogEntry(log, index))
         )}
         <div ref={logsEndRef} />
       </div>

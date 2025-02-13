@@ -32,6 +32,11 @@ const GlassmorphismWindow: React.FC<GlassmorphismWindowProps> = ({ activeTab }) 
   const typingSpeed = 30;
   const deletingSpeed = 15;
   const pauseDuration = 4000;
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
@@ -82,6 +87,11 @@ const GlassmorphismWindow: React.FC<GlassmorphismWindowProps> = ({ activeTab }) 
     document.removeEventListener('mousemove', handleMouseMove);
     document.removeEventListener('mouseup', stopResizing);
   };
+
+  // Return null or a loading state during SSR
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <div className={`
