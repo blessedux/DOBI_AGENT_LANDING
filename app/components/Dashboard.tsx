@@ -52,6 +52,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             <DobiChart 
               activeTab={activeTab} 
               selectedDevice={selectedDevice}
+              setSelectedDevice={setSelectedDevice}
             />
           ) : (
             <div className="relative w-full h-full">

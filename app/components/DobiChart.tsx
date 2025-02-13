@@ -39,12 +39,12 @@ const edgeTypes = {
 };
 
 const initialNodes: Node<CustomNodeData>[] = [
-  { id: "1", position: { x: 100, y: 50 }, type: "customNode", data: { headerLabel: "RWA", label: "EV-Charger", description: "Transaction Received", number: 1 } },
-  { id: "2", position: { x: 600, y: 50 }, type: "customNode", data: { headerLabel: "DBS", label: "DBS Accountability", description: "Logs financial & energy data", number: 2 } },
-  { id: "3", position: { x: 600, y: 400 }, type: "customNode", data: { headerLabel: "AI Core", label: "DOBI-CORE AI", description: "Allocates profits & costs", number: 3 } },
-  { id: "4", position: { x: 100, y: 400 }, type: "customNode", data: { headerLabel: "Security", label: "ZKP Secure Deposit", description: "Ensures tamper-proof fund transfers", number: 4 } },
-  { id: "5", position: { x: 100, y: 800 }, type: "customNode", data: { headerLabel: "Smart Contract", label: "Dobprotocol Pool", description: "Stores & manages investor funds", number: 5 } },
-  { id: "6", position: { x: 600, y: 800 }, type: "customNode", data: { headerLabel: "Tokenomics", label: "Token Distribution", description: "Profit distribution to token holders", number: 6 } },
+  { id: "1", position: { x: 250, y: 50 }, type: "customNode", data: { headerLabel: "RWA", label: "EV-Charger", description: "Transaction Received", number: 1 } },
+  { id: "4", position: { x: 250, y: 400 }, type: "customNode", data: { headerLabel: "Security", label: "ZKP Secure Deposit", description: "Ensures tamper-proof fund transfers", number: 4 } },
+  { id: "5", position: { x: 250, y: 800 }, type: "customNode", data: { headerLabel: "Smart Contract", label: "Dobprotocol Pool", description: "Stores & manages investor funds", number: 5 } },
+  { id: "2", position: { x: 750, y: 50 }, type: "customNode", data: { headerLabel: "DBS", label: "DBS Accountability", description: "Logs financial & energy data", number: 2 } },
+  { id: "3", position: { x: 750, y: 400 }, type: "customNode", data: { headerLabel: "AI Core", label: "DOBI-CORE AI", description: "Allocates profits & costs", number: 3 } },
+  { id: "6", position: { x: 750, y: 800 }, type: "customNode", data: { headerLabel: "Tokenomics", label: "Token Distribution", description: "Profit distribution to token holders", number: 6 } },
 ];
 
 const initialEdges: Edge[] = [
@@ -136,6 +136,7 @@ const CustomNode = ({ data }: { data: CustomNodeData }) => {
 interface DobiChartProps {
   activeTab: string;
   selectedDevice: Charger | null;
+  setSelectedDevice: (device: Charger | null) => void;
 }
 
 const nodeTypes: NodeTypes = {
@@ -161,7 +162,11 @@ export interface Charger {
   balance_total: number;
 }
 
-const DobiChart: React.FC<DobiChartProps> = ({ activeTab, selectedDevice }) => {
+const DobiChart: React.FC<DobiChartProps> = ({ 
+  activeTab, 
+  selectedDevice,
+  setSelectedDevice
+}) => {
   console.log('DobiChart rendering with device:', selectedDevice?.id_charger);
 
   const [nodes, setNodes, onNodesChange] = useNodesState<CustomNodeData>(initialNodes);
@@ -179,6 +184,31 @@ const DobiChart: React.FC<DobiChartProps> = ({ activeTab, selectedDevice }) => {
     config: { tension: 200, friction: 20 },
   });
 
+  React.useEffect(() => {
+    const updateNodePositions = () => {
+      const viewportWidth = window.innerWidth;
+      const leftColumnX = Math.max(viewportWidth / 2 - 150, 250); // Ensure minimum of 250px
+      const rightColumnX = leftColumnX + 500; // Fixed 500px gap between columns
+
+      setNodes(nodes => nodes.map(node => ({
+        ...node,
+        position: {
+          x: node.id === "1" || node.id === "4" || node.id === "5" 
+            ? leftColumnX  // Left column
+            : rightColumnX, // Right column
+          y: node.position.y
+        }
+      })));
+    };
+
+    // Center nodes on mount
+    updateNodePositions();
+
+    // Add resize listener
+    window.addEventListener('resize', updateNodePositions);
+    return () => window.removeEventListener('resize', updateNodePositions);
+  }, []);
+
   return (
     <div className="relative w-full h-full">
       {selectedDevice ? (
@@ -189,14 +219,8 @@ const DobiChart: React.FC<DobiChartProps> = ({ activeTab, selectedDevice }) => {
           exit={{ opacity: 0, filter: "blur(10px)" }}
           transition={{ duration: 0.3 }}
         >
-          <div className="p-4 border-b flex items-center justify-between">
+          <div className="p-4 border-b flex items-center">
             <h2 className="text-xl font-semibold">Device Milestones</h2>
-            <button 
-              onClick={() => console.log('Selected device:', selectedDevice)}
-              className="px-4 py-2 bg-blue-500 text-white rounded"
-            >
-              Debug Device State
-            </button>
           </div>
           <DeviceWorkflow 
             selectedDevice={selectedDevice} 

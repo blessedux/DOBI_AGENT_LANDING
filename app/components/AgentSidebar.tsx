@@ -144,8 +144,9 @@ const AgentSidebar: React.FC<AgentSidebarProps> = ({
     >
       <div className="sticky top-0 flex items-center justify-between p-4 border-b border-gray-100 bg-white">
         <button 
-          onClick={handleChevronClick}
+          onClick={() => setSelectedDevice(null)}
           className="p-2 rounded-full hover:bg-gray-100/80 transition-all"
+          aria-label={selectedDevice ? "Close device workflow" : "Toggle agent sidebar"}
         >
           {isOpen ? <ChevronRight className="text-gray-600" /> : <ChevronLeft className="text-gray-600" />}
         </button>
@@ -167,7 +168,7 @@ const AgentSidebar: React.FC<AgentSidebarProps> = ({
                 <div className="relative">
                   <div className="w-12 h-12 rounded-full bg-[#E8EDFF] flex items-center justify-center overflow-hidden">
                     <Image 
-                      src="/icons/Zap_Icon.png"
+                      src={index >= 4 ? "/icons/Zap_Icon2.png" : "/icons/Zap_Icon.png"}
                       alt="Zap Icon"
                       width={48}
                       height={48}
