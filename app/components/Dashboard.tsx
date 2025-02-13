@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import AgentSidebar from "./AgentSidebar";
 import BubbleMap from "./BubbleMap";
 import DobiChart, { Charger } from "./DobiChart";
 import DeviceWorkflow from "./DeviceWorkflow";
@@ -17,6 +18,8 @@ const Dashboard: React.FC<DashboardProps> = ({
   selectedDevice,
   setSelectedDevice 
 }) => {
+  const [hoveredDeviceId, setHoveredDeviceId] = useState<string | null>(null);
+
   useEffect(() => {
     console.log('Dashboard state:', { 
       activeTab,
@@ -82,6 +85,13 @@ const Dashboard: React.FC<DashboardProps> = ({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Agent Sidebar */}
+      <AgentSidebar
+        selectedDevice={selectedDevice}
+        setSelectedDevice={setSelectedDevice}
+        hoveredDeviceId={hoveredDeviceId}
+      />
     </div>
   );
 }

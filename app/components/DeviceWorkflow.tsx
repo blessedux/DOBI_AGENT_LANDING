@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "./ui/button";
 import { X } from "lucide-react";
 import BackgroundScene from './BackgroundScene';
@@ -12,9 +12,6 @@ import { Charger } from './DobiChart';
 interface MilestoneData {
   title: string;
   model: string;
-  address: string;
-  transactions: number;
-  balance: number;
   step: number;
 }
   
@@ -29,168 +26,36 @@ interface DeviceWorkflowProps {
   onClose: () => void;
 }
 
-const nodes = [
-  {
-    id: '1',
-    type: 'default',
-    data: {
-      label: 'Transaction Received - EV Charger',
-      milestone: {
-        title: 'Transaction Received',
-        model: 'Secure transaction processing through TEE environment',
-        address: 'Transaction Processing',
-        transactions: 100,
-        balance: 5000,
-        step: 1
-      }
-    },
-    position: { x: 0, y: 0 }
-  },
-  {
-    id: '2',
-    type: 'default',
-    data: {
-      label: 'DBS Accountability System',
-      milestone: {
-        title: 'DBS Accountability',
-        model: 'System Check',
-        address: 'Verification Process',
-        transactions: 150,
-        balance: 7500,
-        step: 2
-      }
-    },
-    position: { x: 200, y: 100 }
-  },
-  {
-    id: '3',
-    type: 'default',
-    data: {
-      label: 'DOBI-CORE Fuzzy AI Agent',
-      milestone: {
-        title: 'AI Processing',
-        model: 'DOBI-CORE',
-        address: 'AI Verification',
-        transactions: 200,
-        balance: 10000,
-        step: 3
-      }
-    },
-    position: { x: 400, y: 200 }
-  },
-  {
-    id: '4',
-    type: 'default',
-    data: {
-      label: 'Convert to DOB Token',
-      milestone: {
-        title: 'Convert to DOB Token',
-        model: 'The payment in fiat is converted to the DOB token using an on-ramp service.',
-        address: 'Token Conversion',
-        transactions: 250,
-        balance: 12500,
-        step: 4
-      }
-    },
-    position: { x: 600, y: 300 }
-  },
-  {
-    id: '5',
-    type: 'default',
-    data: {
-      label: 'ZKP - Zero Knowledge Proof',
-      milestone: {
-        title: 'ZKP - Zero Knowledge Proof',
-        model: 'Funds are deposited securely using a Zero Knowledge Proof system for privacy-preserving verification.',
-        address: 'Secure Deposit',
-        transactions: 300,
-        balance: 15000,
-        step: 5
-      }
-    },
-    position: { x: 800, y: 400 }
-  },
-  {
-    id: '6',
-    type: 'default',
-    data: {
-      label: 'Dobprotocol Profit Pool - Smart Contract',
-      milestone: {
-        title: 'Dobprotocol Profit Pool',
-        model: 'The funds are sent to the Dobprotocol profit pool, where the profit and costs are managed.',
-        address: 'Smart Contract',
-        transactions: 350,
-        balance: 17500,
-        step: 6
-      }
-    },
-    position: { x: 1000, y: 500 }
-  },
-  {
-    id: '7',
-    type: 'default',
-    data: {
-      label: 'Profit Distribution',
-      milestone: {
-        title: 'Profit Distribution',
-        model: 'The profit (30%) is distributed proportionally to token holders in the Dobprotocol pool',
-        address: 'Distribution',
-        transactions: 400,
-        balance: 20000,
-        step: 7
-      }
-    },
-    position: { x: 1200, y: 600 }
-  },
-  {
-    id: '8',
-    type: 'default',
-    data: {
-      label: 'Cost Allocation',
-      milestone: {
-        title: 'Cost Allocation',
-        model: 'The costs (70%) are divided into fixed and variable costs. Fixed costs include rent, maintenance, and insurance, while variable costs cover energy usage.',
-        address: 'Allocation',
-        transactions: 450,
-        balance: 22500,
-        step: 8
-      }
-    },
-    position: { x: 800, y: 600 }
-  },
-  {
-    id: '9',
-    type: 'default',
-    data: {
-      label: 'Fixed Costs Management',
-      milestone: {
-        title: 'Fixed Costs Management',
-        model: 'Manage fixed costs, including rent, maintenance, and insurance.',
-        address: 'Fixed Costs',
-        transactions: 500,
-        balance: 25000,
-        step: 9
-      }
-    },
-    position: { x: 600, y: 700 }
-  },
-  {
-    id: '10',
-    type: 'default',
-    data: {
-      label: 'Variable Costs Management',
-      milestone: {
-        title: 'Variable Costs Management',
-        model: 'Manage variable costs based on the energy used during the charging session',
-        address: 'Variable Costs',
-        transactions: 550,
-        balance: 27500,
-        step: 10
-      }
-    },
-    position: { x: 1000, y: 700 }
-  },
-];
+const getNodePositions = (isMobile: boolean) => {
+  if (isMobile) {
+    return [
+      { x: 150, y: 0 },    // Node 1
+      { x: 150, y: 150 },  // Node 2
+      { x: 150, y: 300 },  // Node 3
+      { x: 150, y: 450 },  // Node 4
+      { x: 150, y: 600 },  // Node 5
+      { x: 150, y: 750 },  // Node 6
+      { x: 150, y: 900 },  // Node 7
+      { x: 150, y: 1050 }, // Node 8
+      { x: 150, y: 1200 }, // Node 9
+      { x: 150, y: 1350 }, // Node 10
+    ];
+  }
+  
+  // Desktop positions remain the same
+  return [
+    { x: 0, y: 0 },
+    { x: 200, y: 100 },
+    { x: 400, y: 200 },
+    { x: 600, y: 300 },
+    { x: 800, y: 400 },
+    { x: 1000, y: 500 },
+    { x: 1200, y: 600 },
+    { x: 800, y: 600 },
+    { x: 600, y: 700 },
+    { x: 1000, y: 700 },
+  ];
+};
 
 const edges = [
   { 
@@ -314,6 +179,153 @@ const DeviceWorkflow: React.FC<DeviceWorkflowProps> = ({
   onClose 
 }) => {
   const [hoveredMilestone, setHoveredMilestone] = useState<MilestoneData | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const positions = getNodePositions(isMobile);
+  
+  const nodes = [
+    // Update each node's position using the positions array
+    {
+      id: '1',
+      type: 'default',
+      data: {
+        label: 'Transaction Received - EV Charger',
+        milestone: {
+          title: 'Transaction Received',
+          model: 'The EV charger operates as a Real World Asset (RWA) and receives a transaction to start charging energy. Generates initial reports on energy usage and payment.',
+          step: 1
+        }
+      },
+      position: positions[0]
+    },
+    {
+      id: '2',
+      type: 'default',
+      data: {
+        label: 'DBS Accountability System',
+        milestone: {
+          title: 'DBS Accountability',
+          model: 'System Check',
+          step: 2
+        }
+      },
+      position: positions[1]
+    },
+    {
+      id: '3',
+      type: 'default',
+      data: {
+        label: 'DOBI-CORE Fuzzy AI Agent',
+        milestone: {
+          title: 'AI Processing',
+          model: 'DOBI-CORE',
+          step: 3
+        }
+      },
+      position: positions[2]
+    },
+    {
+      id: '4',
+      type: 'default',
+      data: {
+        label: 'Convert to DOB Token',
+        milestone: {
+          title: 'Convert to DOB Token',
+          model: 'The payment in fiat is converted to the DOB token using an on-ramp service.',
+          step: 4
+        }
+      },
+      position: positions[3]
+    },
+    {
+      id: '5',
+      type: 'default',
+      data: {
+        label: 'ZKP - Zero Knowledge Proof',
+        milestone: {
+          title: 'ZKP - Zero Knowledge Proof',
+          model: 'Funds are deposited securely using a Zero Knowledge Proof system for privacy-preserving verification.',
+          step: 5
+        }
+      },
+      position: positions[4]
+    },
+    {
+      id: '6',
+      type: 'default',
+      data: {
+        label: 'Dobprotocol Profit Pool - Smart Contract',
+        milestone: {
+          title: 'Dobprotocol Profit Pool',
+          model: 'The funds are sent to the Dobprotocol profit pool, where the profit and costs are managed.',
+          step: 6
+        }
+      },
+      position: positions[5]
+    },
+    {
+      id: '7',
+      type: 'default',
+      data: {
+        label: 'Profit Distribution',
+        milestone: {
+          title: 'Profit Distribution',
+          model: 'The profit (30%) is distributed proportionally to token holders in the Dobprotocol pool',
+          step: 7
+        }
+      },
+      position: positions[6]
+    },
+    {
+      id: '8',
+      type: 'default',
+      data: {
+        label: 'Cost Allocation',
+        milestone: {
+          title: 'Cost Allocation',
+          model: 'The costs (70%) are divided into fixed and variable costs. Fixed costs include rent, maintenance, and insurance, while variable costs cover energy usage.',
+          step: 8
+        }
+      },
+      position: positions[7]
+    },
+    {
+      id: '9',
+      type: 'default',
+      data: {
+        label: 'Fixed Costs Management',
+        milestone: {
+          title: 'Fixed Costs Management',
+          model: 'Manage fixed costs, including rent, maintenance, and insurance.',
+          step: 9
+        }
+      },
+      position: positions[8]
+    },
+    {
+      id: '10',
+      type: 'default',
+      data: {
+        label: 'Variable Costs Management',
+        milestone: {
+          title: 'Variable Costs Management',
+          model: 'Manage variable costs based on the energy used during the charging session',
+          step: 10
+        }
+      },
+      position: positions[9]
+    },
+  ];
 
   return (
     <div className="h-full w-full relative">
@@ -341,11 +353,12 @@ const DeviceWorkflow: React.FC<DeviceWorkflowProps> = ({
 
         {/* React Flow Chart */}
         <ReactFlowProvider>
-          <div className="h-[calc(100vh-200px)] w-full">
+          <div className={`h-[calc(100vh-200px)] w-full ${isMobile ? 'overflow-y-auto' : ''}`}>
             <ReactFlow 
-              nodes={nodes.map(node => ({
+              nodes={nodes.map((node, index) => ({
                 ...node,
                 type: 'customNode',
+                position: positions[index],
                 data: {
                   ...node.data,
                   onHover: setHoveredMilestone
@@ -354,6 +367,8 @@ const DeviceWorkflow: React.FC<DeviceWorkflowProps> = ({
               edges={edges}
               nodeTypes={{ customNode: CustomNode }}
               fitView
+              minZoom={isMobile ? 0.2 : 0.5}
+              maxZoom={isMobile ? 0.8 : 1.5}
             />
           </div>
         </ReactFlowProvider>
@@ -363,9 +378,6 @@ const DeviceWorkflow: React.FC<DeviceWorkflowProps> = ({
           <AnimatedCard
             title={hoveredMilestone.title}
             model={hoveredMilestone.model}
-            address={hoveredMilestone.address}
-            transactions={hoveredMilestone.transactions}
-            balance={hoveredMilestone.balance}
             step={hoveredMilestone.step}
           />
         )}

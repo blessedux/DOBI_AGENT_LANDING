@@ -12,7 +12,7 @@ import {
 } from "lucide-react"; 
 import { Charger } from "./DobiChart";
 import Image from 'next/image';
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 const chargers = [
   {
@@ -116,45 +116,42 @@ const chargers = [
 ];
 
 interface AgentSidebarProps {
-  setSelectedDevice: (device: Charger | null) => void;
   selectedDevice: Charger | null;
-  isSidebarOpen: boolean;
-  setIsSidebarOpen: (open: boolean) => void;
+  setSelectedDevice: (device: Charger | null) => void;
   hoveredDeviceId: string | null;
 }
 
 const AgentSidebar: React.FC<AgentSidebarProps> = ({ 
-  isSidebarOpen, 
-  setIsSidebarOpen,
   selectedDevice,
   setSelectedDevice,
   hoveredDeviceId,
 }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
   const handleChevronClick = () => {
-    if (selectedDevice) {
-      setSelectedDevice(null);
-    } else {
-      setIsSidebarOpen(!isSidebarOpen);
-    }
+    setIsOpen(!isOpen);
   };
 
   const hoveredDevice = chargers.find(charger => charger.id_charger === hoveredDeviceId);
 
   return (
-    <div className={`fixed right-0 top-[64px] bottom-0 bg-white/90 backdrop-blur-md shadow-lg z-[60] 
-        transition-all duration-300 border-l border-gray-100 flex flex-col
-        ${isSidebarOpen ? "w-80" : "w-24"}`}
+    <motion.div
+      initial={{ width: "72px" }}
+      animate={{ width: isOpen ? "384px" : "100px" }}
+      transition={{ duration: 0.3 }}
+      className="fixed right-0 top-[64px] bottom-0 bg-white border-l border-gray-100 shadow-lg z-[60]"
+      style={{ height: 'calc(100vh - 64px)' }}
     >
-      <div className="flex items-center justify-between p-4 border-b border-gray-100">
+      <div className="sticky top-0 flex items-center justify-between p-4 border-b border-gray-100 bg-white">
         <button 
           onClick={handleChevronClick}
           className="p-2 rounded-full hover:bg-gray-100/80 transition-all"
         >
-          {isSidebarOpen ? <ChevronRight className="text-gray-600" /> : <ChevronLeft className="text-gray-600" />}
+          {isOpen ? <ChevronRight className="text-gray-600" /> : <ChevronLeft className="text-gray-600" />}
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="overflow-y-auto h-[calc(100%-65px)]">
         <div className="p-4 space-y-4">
           {chargers.map((charger, index) => (
             <button
@@ -174,8 +171,10 @@ const AgentSidebar: React.FC<AgentSidebarProps> = ({
                       alt="Zap Icon"
                       width={48}
                       height={48}
-                      className="w-[120%] h-[120%] object-cover"
-                      style={{ transform: 'scale(1.2)' }}
+                      className="w-8 h-8 object-contain"
+                      style={{ 
+                        transform: 'translateY(3px) translateX(5px) scale(3.5)'
+                      }}
                     />
                   </div>
                   <Badge 
@@ -184,7 +183,7 @@ const AgentSidebar: React.FC<AgentSidebarProps> = ({
                     #{index + 1}
                   </Badge>
                   
-                  {isSidebarOpen && (
+                  {isOpen && (
                     <Badge 
                       className={`absolute -top-3 right-[-200px] px-2 py-0.5 text-[10px] rounded-xl font-medium text-white
                         ${index + 1 === 2 
@@ -197,7 +196,7 @@ const AgentSidebar: React.FC<AgentSidebarProps> = ({
                   )}
                 </div>
                 
-                {isSidebarOpen && (
+                {isOpen && (
                   <div className="flex-1">
                     <h3 className="font-medium text-gray-900">{charger.name}</h3>
                     <div className="flex items-center gap-1 text-xs text-gray-500">
@@ -209,7 +208,7 @@ const AgentSidebar: React.FC<AgentSidebarProps> = ({
                 )}
               </div>
 
-              {isSidebarOpen && (
+              {isOpen && (
                 <div className="grid grid-cols-2 gap-4 mt-4">
                   <div className="bg-[#F9FAFE] p-2 rounded-lg">
                     <p className="text-xs text-[#2D4EC8] font-medium opacity-40">Transactions</p>
@@ -248,10 +247,10 @@ const AgentSidebar: React.FC<AgentSidebarProps> = ({
                 </div>
               </div>
             </motion.div>
-          )}
+          )} 
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
