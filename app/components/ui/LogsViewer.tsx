@@ -62,6 +62,13 @@ const formatChargerLog = (log: TransactionLog) => {
   return log;
 };
 
+interface ChargerData {
+  id_charger: string;
+  balance_total: number;
+  income_generated: number;
+  cost_generated: number;
+}
+
 const LogEntry = ({ log, isNew }: { log: TransactionLog; isNew?: boolean }) => {
   const [showRawData, setShowRawData] = useState(false);
   const [expandedLogs, setExpandedLogs] = useState<Set<string>>(new Set());
@@ -201,6 +208,8 @@ export default function LogsViewer() {
   const [lastUpdateTime, setLastUpdateTime] = useState<Date>(new Date());
   const [previousLogsLength, setPreviousLogsLength] = useState(0);
   const [expandedLogs, setExpandedLogs] = useState<Set<string>>(new Set());
+  const [chargerData, setChargerData] = useState<ChargerData[]>([]);
+  const [lastChargerSyncTime, setLastChargerSyncTime] = useState<Date>(new Date());
 
   const toggleExpand = () => {
     if (isExpanded) {
@@ -291,6 +300,110 @@ export default function LogsViewer() {
     }
   }, [logs, previousLogsLength]);
 
+  // Add function to fetch charger data
+  const fetchChargerData = async () => {
+    try {
+      const response = await fetch('https://dobi-mantle.dobprotocol.com/api/chargers');
+      const data = await response.json();
+      setChargerData(data);
+      setLastChargerSyncTime(new Date());
+    } catch (error) {
+      console.error('Error fetching charger data:', error);
+    }
+  };
+
+  // Set up polling interval for charger data
+  useEffect(() => {
+    // Fetch immediately on mount
+    fetchChargerData();
+
+    // Set up 10-second interval instead of 30
+    const interval = setInterval(fetchChargerData, 10000);
+
+    // Cleanup on unmount
+    return () => clearInterval(interval);
+  }, []);
+
+  // Helper function to get latest charger data
+  const getChargerData = (chargerId: string) => {
+    return chargerData.find(c => c.id_charger === chargerId);
+  };
+
+  // Modify the log rendering to use the fetched data
+  const renderLogEntry = (log: TransactionLog, index: number) => {
+    const isCharger = log.txHash.startsWith('CHG-');
+    const charger = isCharger ? getChargerData(log.txHash) : null;
+    
+    return (
+      <div key={log.txHash || Math.random()} 
+        className={`mb-2 p-2 rounded ${
+          index >= previousLogsLength - 1 ? 'animate-highlight' : ''
+        }`}
+      >
+        <div className="flex items-center justify-between">
+          <span className="text-gray-400">
+            {formatTimestamp(log.timestamp)}
+          </span>
+          <span className={`px-2 py-0.5 rounded ${
+            isCharger 
+              ? log.status === 'active' 
+                ? 'bg-green-500/20 text-green-400'
+                : 'bg-yellow-500/20 text-yellow-400'
+              : getStatusColor(log.status)
+          }`}>
+            {isCharger ? log.displayStatus : formatStatus(log.status)}
+          </span>
+        </div>
+        
+        <div className="mt-1">
+          <span className="text-gray-300">
+            {isCharger ? 'Charger ID: ' : 'TX: '}
+          </span>
+          <span className="font-mono text-gray-400">
+            {isCharger ? log.txHash.replace('CHG-', '') : log.txHash}
+          </span>
+        </div>
+
+        <div className="mt-1">
+          <span className="text-gray-300">
+            {isCharger ? 'Balance: ' : 'Amount: '}
+          </span>
+          <span className="text-gray-200">
+            {isCharger && charger 
+              ? `$${charger.balance_total.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                })}` 
+              : log.amount}
+          </span>
+        </div>
+
+        {isCharger && charger && (
+          <div className="mt-1 flex gap-4">
+            <div>
+              <span className="text-gray-300">Income: </span>
+              <span className="text-green-400">
+                ${charger.income_generated.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                })}
+              </span>
+            </div>
+            <div>
+              <span className="text-gray-300">Cost: </span>
+              <span className="text-red-400">
+                ${charger.cost_generated.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                })}
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div
       className="fixed bottom-0 left-0 w-full bg-gray-900 text-white bg-opacity-40 backdrop-blur-sm border-t border-gray-700 flex flex-col transition-all duration-300 z-30"
@@ -304,8 +417,13 @@ export default function LogsViewer() {
         <span>{isExpanded ? "▼ Collapse Logs" : "▲ Expand Logs"}</span>
         <div className="flex items-center gap-4">
           <span className="text-xs text-gray-400">DOBI Smart Contract Logs</span>
-          {loading && <span className="text-xs text-yellow-400 animate-pulse">Syncing...</span>}
-          {!loading && <span className="text-xs text-gray-400">Last update: {formatDistanceToNow(lastUpdateTime, { addSuffix: true })}</span>}
+          {loading ? (
+            <span className="text-xs text-yellow-400 animate-pulse">Syncing...</span>
+          ) : (
+            <span className="text-xs text-gray-400">
+              Charging data synced {formatDistanceToNow(lastChargerSyncTime, { addSuffix: true })}
+            </span>
+          )}
           {error && <span className="text-xs text-red-400">Connection Error</span>}
         </div>
       </div>
@@ -314,53 +432,7 @@ export default function LogsViewer() {
         {error ? (
           renderError(error)
         ) : (
-          logs.map((log, index) => {
-            const formattedLog = formatChargerLog(log);
-            const isCharger = log.txHash.startsWith('CHG-');
-            
-            return (
-              <div key={log.txHash || Math.random()} 
-                className={`mb-2 p-2 rounded ${
-                  index >= previousLogsLength - 1 ? 'animate-highlight' : ''
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-400">
-                    {formatTimestamp(log.timestamp)}
-                  </span>
-                  <span className={`px-2 py-0.5 rounded ${
-                    isCharger 
-                      ? log.status === 'active' 
-                        ? 'bg-green-500/20 text-green-400'
-                        : 'bg-yellow-500/20 text-yellow-400'
-                      : getStatusColor(log.status)
-                  }`}>
-                    {isCharger ? formattedLog.displayStatus : formatStatus(log.status)}
-                  </span>
-                </div>
-                
-                <div className="mt-1">
-                  <span className="text-gray-300">
-                    {isCharger ? 'Charger ID: ' : 'TX: '}
-                  </span>
-                  <span className="font-mono text-gray-400">
-                    {isCharger ? log.txHash.replace('CHG-', '') : log.txHash}
-                  </span>
-                </div>
-
-                <div className="mt-1">
-                  <span className="text-gray-300">
-                    {isCharger ? 'Balance: ' : 'Amount: '}
-                  </span>
-                  <span className="text-gray-200">
-                    {isCharger ? formattedLog.displayAmount : log.amount}
-                  </span>
-                </div>
-
-                {/* ... rest of the log entry ... */}
-              </div>
-            );
-          })
+          logs.map((log, index) => renderLogEntry(log, index))
         )}
         <div ref={logsEndRef} />
       </div>

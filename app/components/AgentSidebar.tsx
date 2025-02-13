@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Badge } from "./ui/Badge";
 import { ScrollArea } from "./ui/ScrollArea";
 import { 
@@ -129,29 +129,44 @@ const AgentSidebar: React.FC<AgentSidebarProps> = ({
   const [isOpen, setIsOpen] = useState(false);
 
   const handleChevronClick = () => {
-    setIsOpen(!isOpen);
+    if (selectedDevice) {
+      // If there's a selected device, close it first
+      setSelectedDevice(null);
+    } else {
+      // If no device is selected, toggle the sidebar
+      setIsOpen(!isOpen);
+    }
   };
+
+  // Remove the auto-open effect
+  // Instead, close the sidebar when device workflow opens
+  useEffect(() => {
+    if (selectedDevice) {
+      setIsOpen(false);
+    }
+  }, [selectedDevice]);
 
   const hoveredDevice = chargers.find(charger => charger.id_charger === hoveredDeviceId);
 
   return (
     <motion.div
       initial={{ width: "72px" }}
-      animate={{ width: isOpen ? "384px" : "100px" }}
+      animate={{ width: isOpen && !selectedDevice ? "384px" : "100px" }}
       transition={{ duration: 0.3 }}
       className="fixed right-0 top-[64px] bottom-0 bg-white border-l border-gray-100 shadow-lg z-[60]"
       style={{ height: 'calc(100vh - 64px)' }}
     >
       <div className="sticky top-0 flex items-center justify-between p-4 border-b border-gray-100 bg-white">
         <button 
-          onClick={() => setSelectedDevice(null)}
+          onClick={handleChevronClick}
           className="p-2 rounded-full hover:bg-gray-100/80 transition-all"
           aria-label={selectedDevice ? "Close device workflow" : "Toggle agent sidebar"}
         >
-          {isOpen ? <ChevronRight className="text-gray-600" /> : <ChevronLeft className="text-gray-600" />}
+          {isOpen && !selectedDevice ? <ChevronRight className="text-gray-600" /> : <ChevronLeft className="text-gray-600" />}
         </button>
       </div>
 
+      {/* Always show the container with charger icons */}
       <div className="overflow-y-auto h-[calc(100%-65px)]">
         <div className="p-4 space-y-4">
           {chargers.map((charger, index) => (
@@ -184,43 +199,47 @@ const AgentSidebar: React.FC<AgentSidebarProps> = ({
                     #{index + 1}
                   </Badge>
                   
-                  {isOpen && (
-                    <Badge 
-                      className={`absolute -top-3 right-[-200px] px-2 py-0.5 text-[10px] rounded-xl font-medium text-white
-                        ${index + 1 === 2 
-                          ? 'bg-[#9A99FF]' 
-                          : 'bg-green-500'
-                        }`}
-                    >
-                      {index + 1 === 2 ? 'maintenance' : 'active'}
-                    </Badge>
+                  {/* Only show expanded content when sidebar is open and no device selected */}
+                  {isOpen && !selectedDevice && (
+                    <>
+                      <Badge 
+                        className={`absolute -top-3 right-[-200px] px-2 py-0.5 text-[10px] rounded-xl font-medium text-white
+                          ${index + 1 === 2 
+                            ? 'bg-[#9A99FF]' 
+                            : 'bg-green-500'
+                          }`}
+                      >
+                        {index + 1 === 2 ? 'maintenance' : 'active'}
+                      </Badge>
+                    </>
                   )}
                 </div>
                 
-                {isOpen && (
-                  <div className="flex-1">
-                    <h3 className="font-medium text-gray-900">{charger.name}</h3>
-                    <div className="flex items-center gap-1 text-xs text-gray-500">
-                      <span>{charger.model}</span>
-                      <span>•</span>
-                      <span>{charger.location.address}</span>
+                {/* Only show expanded content when sidebar is open and no device selected */}
+                {isOpen && !selectedDevice && (
+                  <>
+                    <div className="flex-1">
+                      <h3 className="font-medium text-gray-900">{charger.name}</h3>
+                      <div className="flex items-center gap-1 text-xs text-gray-500">
+                        <span>{charger.model}</span>
+                        <span>•</span>
+                        <span>{charger.location.address}</span>
+                      </div>
                     </div>
-                  </div>
+                    
+                    <div className="grid grid-cols-2 gap-4 mt-4">
+                      <div className="bg-[#F9FAFE] p-2 rounded-lg">
+                        <p className="text-xs text-[#2D4EC8] font-medium opacity-40">Transactions</p>
+                        <p className="text-lg font-semibold opacity-60">{charger.transactions}</p>
+                      </div>
+                      <div className="bg-[#F9FAFE] p-2 rounded-lg">
+                        <p className="text-xs text-[#2D4EC8] font-medium opacity-40">Balance</p>
+                        <p className="text-lg font-semibold opacity-60">${charger.balance_total.toLocaleString()}</p>
+                      </div>
+                    </div>
+                  </>
                 )}
               </div>
-
-              {isOpen && (
-                <div className="grid grid-cols-2 gap-4 mt-4">
-                  <div className="bg-[#F9FAFE] p-2 rounded-lg">
-                    <p className="text-xs text-[#2D4EC8] font-medium opacity-40">Transactions</p>
-                    <p className="text-lg font-semibold opacity-60">{charger.transactions}</p>
-                  </div>
-                  <div className="bg-[#F9FAFE] p-2 rounded-lg">
-                    <p className="text-xs text-[#2D4EC8] font-medium opacity-40">Balance</p>
-                    <p className="text-lg font-semibold opacity-60">${charger.balance_total.toLocaleString()}</p>
-                  </div>
-                </div>
-              )}
             </button>
           ))}
 
