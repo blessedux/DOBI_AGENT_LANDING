@@ -48,6 +48,7 @@ const nextConfig = {
   },
   // Enable image domains if you're using next/image
   images: {
+    unoptimized: true,
     domains: ['your-domain.com'],
     // Add a remotePatterns entry if needed
     remotePatterns: [
