@@ -305,7 +305,7 @@ export default function LogsViewer() {
   // Add function to fetch charger data
   const fetchChargerData = async () => {
     try {
-      const response = await fetch('https://dobi-mantle.dobprotocol.com/api/chargers');
+      const response = await fetch('https://dobi-mantle.dobprotocol.com/api/logs');
       const data = await response.json();
       setChargerData(data);
       setLastChargerSyncTime(new Date());
