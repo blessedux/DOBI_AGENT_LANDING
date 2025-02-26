@@ -93,74 +93,82 @@ const AgentSidebar: React.FC<AgentSidebarProps> = ({
               <button
                 key={charger.id_charger}
                 onClick={() => setSelectedDevice(charger)}
-                className={`w-full p-4 rounded-xl border transition-all hover:shadow-md cursor-pointer text-left
+                className={`w-full p-3 md:p-4 rounded-xl border transition-all hover:shadow-md cursor-pointer text-left
                   ${selectedDevice?.id_charger === charger.id_charger
                     ? "bg-[#E8EDFF] border-[#2D4EC8]"
                     : "hover:bg-gray-50 border-gray-100"
                   }`}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 md:gap-3">
                   <div className="relative">
-                    <div className="w-12 h-12 rounded-full bg-[#E8EDFF] flex items-center justify-center overflow-hidden">
+                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#E8EDFF] flex items-center justify-center overflow-hidden">
                       <Image 
                         {...IMAGES[index >= 4 ? 'zapIcon2' : 'zapIcon']}
-                        className="w-8 h-8 object-contain"
+                        className="w-6 h-6 md:w-8 md:h-8 object-contain"
                         priority={true}
                         onError={(e) => {
                           console.error(`Failed to load image: ${IMAGES[index >= 4 ? 'zapIcon2' : 'zapIcon'].src}`);
                         }}
                         style={{ 
                           transform: index >= 4 
-                            ? 'scale(2.0)'
-                            : ' scale(2)'
+                            ? 'scale(1.8)'
+                            : 'scale(1.8)'
                         }}
                       />
                     </div>
                     <Badge 
-                      className={`absolute -top-3 -left-4 px-2 py-0.5 text-[10px] font-bold text-black`}
+                      className="absolute -top-2 -left-2 px-1.5 py-0.5 text-[8px] md:text-[10px] font-bold text-black"
                     >
                       #{index + 1}
                     </Badge>
                     
-                    {/* Only show expanded content when sidebar is open and no device selected */}
+                    {/* Status badge */}
                     {isOpen && !selectedDevice && (
-                      <>
-                        <Badge 
-                          className={`absolute -top-3 right-[-200px] px-2 py-0.5 text-[10px] rounded-xl font-medium text-white
-                            ${index + 1 === 2 
-                              ? 'bg-[#9A99FF]' 
-                              : 'bg-green-500'
-                            }`}
-                        >
-                          {index + 1 === 2 ? 'maintenance' : 'active'}
-                        </Badge>
-                      </>
+                      <Badge 
+                        className={`absolute -top-2 right-[-180px] md:right-[-280px] px-2 py-0.5 text-[8px] md:text-[10px] rounded-xl font-medium text-white
+                          ${index + 1 === 2 
+                            ? 'bg-[#9A99FF]' 
+                            : 'bg-green-500'
+                          }`}
+                      >
+                        {index + 1 === 2 ? 'maintenance' : 'active'}
+                      </Badge>
                     )}
                   </div>
                   
-                  {/* Only show expanded content when sidebar is open and no device selected */}
+                  {/* Content section */}
                   {isOpen && !selectedDevice && (
-                    <>
-                      <div className="flex-1">
-                        <h3 className="font-medium text-gray-900">{charger.name}</h3>
-                        <div className="flex items-center gap-1 text-xs text-gray-500">
-                          <span>{charger.model}</span>
-                          <span>•</span>
-                          <span>{charger.location.address}</span>
-                        </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-gray-900 text-sm md:text-base truncate">{charger.name}</h3>
+                      <div className="flex items-center gap-1 text-[10px] md:text-xs text-gray-500">
+                        <span className="truncate">{charger.model}</span>
+                        <span>•</span>
+                        <span className="truncate">{charger.location.address}</span>
                       </div>
                       
-                      <div className="grid grid-cols-2 gap-4 mt-4">
+                      {/* Stats grid */}
+                      <div className="grid grid-cols-2 gap-2 md:gap-4 mt-3">
                         <div className="bg-[#F9FAFE] p-2 rounded-lg">
-                          <p className="text-xs text-[#2D4EC8] font-medium opacity-40">Transactions</p>
-                          <p className="text-lg font-semibold opacity-60">{charger.transactions}</p>
+                          <p className="text-[8px] md:text-[10px] text-[#2D4EC8] font-medium opacity-40">
+                            Transactions
+                          </p>
+                          <p className="text-sm md:text-base font-semibold opacity-60 text-center">
+                            {charger.transactions.toLocaleString()}
+                          </p>
                         </div>
                         <div className="bg-[#F9FAFE] p-2 rounded-lg">
-                          <p className="text-xs text-[#2D4EC8] font-medium opacity-40">Balance</p>
-                          <p className="text-lg font-semibold opacity-60">${charger.balance_total.toLocaleString()}</p>
+                          <p className="text-[8px] md:text-[10px] text-[#2D4EC8] font-medium opacity-40">
+                            Balance
+                          </p>
+                          <p className="text-sm md:text-base font-semibold opacity-60 text-center">
+                            ${charger.balance_total.toLocaleString(undefined, {
+                              minimumFractionDigits: 0,
+                              maximumFractionDigits: 0
+                            })}
+                          </p>
                         </div>
                       </div>
-                    </>
+                    </div>
                   )}
                 </div>
               </button>
