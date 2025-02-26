@@ -137,13 +137,19 @@ export async function POST(request: Request) {
  * No authentication required for GET requests
  */
 export async function GET() {
+  // During development, return mock data
+  if (process.env.NODE_ENV === 'development') {
+    return NextResponse.json(mockLogs);
+  }
+
+  // In production, make the actual API call
   try {
-    const response = await fetch('https://dobi-mantle.dobprotocol.com/api/chargers', {
+    const response = await fetch('https://dobi-mantle.dobprotocol.com/api/logs', {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
-      cache: 'no-store',
+      cache: 'no-store'
     });
 
     if (!response.ok) {
@@ -151,28 +157,22 @@ export async function GET() {
     }
 
     const data = await response.json();
-    
-    // Transform charger data into log format with simulated value changes
-    const transformedLogs = data.map((charger: any) => {
-      // Add small random variations to balance (±2%)
-      const variation = charger.balance_total * (Math.random() * 0.04 - 0.02);
-      const updatedBalance = charger.balance_total + variation;
-
-      return {
-        txHash: `CHG-${charger.id_charger}`,
-        timestamp: new Date().toISOString(),
-        status: charger.status || 'active',
-        amount: updatedBalance.toString(),
-        network: 'mantle',
-        balance_total: updatedBalance,
-        income_generated: charger.income_generated + (variation > 0 ? variation : 0),
-        cost_generated: charger.cost_generated + (variation < 0 ? Math.abs(variation) : 0)
-      };
-    });
-
-    return NextResponse.json(transformedLogs);
+    return NextResponse.json(data);
   } catch (error) {
     console.error('API route error:', error);
     return NextResponse.json({ error: 'Failed to fetch data' }, { status: 500 });
   }
+}
+
+// Handle OPTIONS request for CORS preflight
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Max-Age': '86400',
+    },
+  });
 } 

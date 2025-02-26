@@ -38,11 +38,11 @@ const getStatusColor = (status: string | undefined) => {
 
 // Add this helper function
 const formatChargerLog = (log: TransactionLog) => {
-  if (log.txHash.startsWith('CHG-')) {
+  if (log.txHash?.startsWith('CHG-')) {
     return {
       ...log,
       type: 'charger',
-      displayAmount: `$${parseFloat(log.amount).toLocaleString(undefined, {
+      displayAmount: `$${parseFloat(log.amount || '0').toLocaleString(undefined, {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
       })}`,
@@ -98,7 +98,7 @@ const LogEntry = ({ log, isNew }: { log: TransactionLog; isNew?: boolean }) => {
   // Get think content
   const thinkContent = formatThinkContent(log.raw_response);
   
-  const isExpanded = expandedLogs.has(log.txHash);
+  const isExpanded = expandedLogs.has(log.txHash || '');
   
   return (
     <div className={`mb-3 p-2 rounded border border-gray-800/20 transition-all duration-500 
@@ -131,7 +131,7 @@ const LogEntry = ({ log, isNew }: { log: TransactionLog; isNew?: boolean }) => {
           </a>
         </div>
         <button
-          onClick={() => toggleLogDetails(log.txHash)}
+          onClick={() => toggleLogDetails(log.txHash || '')}
           className={`text-xs px-2 py-1 rounded transition-colors ${
             isExpanded 
               ? 'bg-blue-500/10 text-red-400' 
@@ -345,8 +345,9 @@ export default function LogsViewer() {
 
   // Modify renderLogEntry to use the currentTime state
   const renderLogEntry = (log: TransactionLog, index: number) => {
-    const isCharger = log.txHash.startsWith('CHG-');
-    const charger = isCharger ? getChargerData(log.txHash) : null;
+    // Add null check for txHash
+    const isCharger = log.txHash?.startsWith('CHG-') || false;
+    const charger = isCharger ? getChargerData(log.txHash || '') : null;
     
     return (
       <div key={log.txHash || Math.random()} 
@@ -366,7 +367,7 @@ export default function LogsViewer() {
                   : 'bg-yellow-500/20 text-yellow-400'
                 : getStatusColor(log.status)
             }`}>
-              {isCharger ? log.displayStatus : formatStatus(log.status)}
+              {isCharger ? (log.status === 'active' ? 'Online' : 'Maintenance') : formatStatus(log.status)}
             </span>
           </div>
           
@@ -383,7 +384,7 @@ export default function LogsViewer() {
             {isCharger ? 'Charger ID: ' : 'TX: '}
           </span>
           <span className="font-mono text-gray-400">
-            {isCharger ? log.txHash.replace('CHG-', '') : log.txHash}
+            {isCharger ? log.txHash?.replace('CHG-', '') : log.txHash || 'Unknown'}
           </span>
         </div>
 
@@ -425,6 +426,20 @@ export default function LogsViewer() {
         )}
       </div>
     );
+  };
+
+  const fetchLogs = async () => {
+    try {
+      const response = await fetch('/api/logs');
+      if (!response.ok) {
+        throw new Error('Failed to fetch logs');
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching logs:', error);
+      return [];
+    }
   };
 
   return (
