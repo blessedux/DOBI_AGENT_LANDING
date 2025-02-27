@@ -10,25 +10,15 @@ export const metadata: Metadata = {
   description: 'Real-world asset management dashboard for EV charging infrastructure',
   icons: {
     icon: [
-      {
-        url: '/favicon.ico',
-        sizes: 'any',
-      },
-      {
-        url: '/icon.png',
-        type: 'image/png',
-        sizes: '32x32',
-      },
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/icon.png', type: 'image/png', sizes: '32x32' },
     ],
-    apple: {
-      url: '/apple-touch-icon.png',
-      sizes: '180x180',
-    },
-  },
-  icons: [
-    { rel: 'preload', url: '/icons/zap-icon1.svg', as: 'image' },
-    { rel: 'preload', url: '/icons/zap-icon2.svg', as: 'image' },
-  ],
+    apple: { url: '/apple-touch-icon.png', sizes: '180x180' },
+    other: [
+      { rel: 'preload', url: '/icons/zap-icon1.svg', type: 'image/svg+xml' },
+      { rel: 'preload', url: '/icons/zap-icon2.svg', type: 'image/svg+xml' },
+    ],
+  }
 }
 
 export default function RootLayout({
@@ -38,11 +28,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <head />
-      <body className={inter.className}>
-        {children}
-        
-        {/* Twitter Conversion Tracking Base Code */}
+      <head>
         <Script id="twitter-pixel-base" strategy="afterInteractive">
           {`
             !function(e,t,n,s,u,a){e.twq||(s=e.twq=function(){s.exe?s.exe.apply(s,arguments):s.queue.push(arguments);
@@ -51,15 +37,17 @@ export default function RootLayout({
             twq('config','p69la');
           `}
         </Script>
-
-        {/* Twitter Conversion Tracking Event Code */}
+        
         <Script id="twitter-pixel-event" strategy="afterInteractive">
           {`
             twq('event', 'tw-p69la-p69lc', {
-              email_address: null // use this to pass a user's email address
+              email_address: null
             });
           `}
         </Script>
+      </head>
+      <body className={inter.className}>
+        {children}
       </body>
     </html>
   )
